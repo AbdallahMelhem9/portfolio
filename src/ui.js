@@ -1,0 +1,229 @@
+// The DOM layer over the room: top bar, compass, hint, one slide-in panel per wall,
+// a detail view that drills into one item, and the badge scanner overlay.
+import { profile, experiences, projects, videos, competitions, topPercent } from './data.js';
+
+const WALLS = [['about', 'About'], ['experiences', 'Experiences'], ['projects', 'Projects'], ['competitions', 'Competitions']];
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const fmt = n => n.toLocaleString('en-US');
+const link = (href, text) => `<a href="${esc(href)}" target="_blank" rel="noopener">${esc(text)}</a>`;
+const pct = (r, of) => { const t = topPercent(r, of); return `${t < 10 ? t.toFixed(1) : Math.round(t)}%`; };
+
+function aboutHTML() {
+  return `
+    <p class="lede">${esc(profile.tagline)}. ${esc(profile.intro)}</p>
+    ${profile.bio.map(p => `<p>${esc(p)}</p>`).join('')}
+    <h3>Education</h3>
+    <ol class="tl">${profile.education.map(e => `<li><span class="when">${esc(e.when)}</span><span class="what">${esc(e.what)}</span><span class="where">${esc(e.where)}</span></li>`).join('')}</ol>
+    <h3>Languages</h3>
+    <ul class="langs">${profile.languages.map(([l, v]) => `<li><b>${esc(l)}</b> ${esc(v)}</li>`).join('')}</ul>
+    <h3>Contact</h3>
+    <p><a href="mailto:${esc(profile.email)}">${esc(profile.email)}</a><br>${link(profile.github, profile.github.replace('https://', ''))}<br>${link(profile.youtube, 'YouTube playlist')}</p>`;
+}
+function expHTML() {
+  return `<p class="lede">Three internships. Click a badge on the wall to scan it, or open the details here.</p>` +
+    experiences.map((e, i) => `
+    <article class="item" data-item="experience:${i}" tabindex="0">
+      <h3>${esc(e.company)}</h3>
+      <p class="meta">${esc(e.role)}<br>${esc(e.when)}</p>
+      <p>${esc(e.summary)}</p>
+      <button class="more" type="button" data-detail="experience:${i}">Details</button>
+    </article>`).join('');
+}
+function projHTML() {
+  const items = projects.map((p, i) => `
+    <article class="item" data-item="project:${i}" tabindex="0">
+      <h3>${esc(p.title)}</h3>
+      <p>${esc(p.blurb)}</p>
+      <p class="skills">${esc(p.stack)}</p>
+      <button class="more" type="button" data-detail="project:${i}">Details</button>
+    </article>`).join('');
+  const vids = videos.map((v, i) => `
+    <article class="item" data-item="video:${i}" tabindex="0">
+      <h3>${esc(v.title)}</h3>
+      <p class="meta">YouTube, ${esc(v.date)}</p>
+      <button class="more" type="button" data-detail="video:${i}">Watch</button>
+    </article>`).join('');
+  return `<p class="lede">Things I built outside a leaderboard. Click a monitor on the wall, or open the details here.</p>${items}
+    <h3>Videos</h3>
+    <p>My YouTube series: a deep learning paper explained, then rebuilt in PyTorch. The rack under the monitors shows these eight; click one to play it here.</p>${vids}
+    <p>${link(profile.youtube, 'Full playlist on YouTube')}</p>`;
+}
+function compHTML() {
+  const ranked = competitions.ranked.map((r, i) => `
+    <article class="item" data-item="competition:${i}" tabindex="0">
+      <div class="rankline"><span class="rank">${r.rank} <small>of ${fmt(r.of)}</small></span><span class="top${topPercent(r.rank, r.of) <= 1 ? ' gold' : ''}">top ${pct(r.rank, r.of)}</span></div>
+      <h3>${esc(r.name)}</h3>
+      <p class="meta">${esc(r.host)}</p>
+      <p>${esc(r.note)}</p>
+      <button class="more" type="button" data-detail="competition:${i}">Details${r.url ? ' and code' : ''}</button>
+    </article>`).join('');
+  const entered = competitions.entered.map(e => `<li>${esc(e.name)}<span>${esc(e.host)}. ${esc(e.note)}</span></li>`).join('');
+  return `<p class="lede">Ranked results first. Click a row on the leaderboard screen, or open the details here.</p>${ranked}
+    <h3>Also entered</h3><ul class="entered">${entered}</ul>`;
+}
+
+// One item, expanded. Returns the pieces the detail view renders.
+function detail(kind, i) {
+  if (kind === 'experience') {
+    const e = experiences[i];
+    return { back: 'experiences', eyebrow: `Internship, ${e.when}`, title: e.company, meta: e.role,
+      body: `<p>${esc(e.summary)}</p><h4>What I did</h4><ul>${e.bullets.map(b => `<li>${esc(b)}</li>`).join('')}</ul><h4>Stack</h4><p>${esc(e.skills)}</p>` };
+  }
+  if (kind === 'competition') {
+    const c = competitions.ranked[i];
+    const code = c.url ? link(c.url, 'Code and write-up on GitHub') : `<span class="muted">${esc(c.codeNote || 'No public code for this one.')}</span>`;
+    return { back: 'competitions', eyebrow: `${c.host}, ${c.rank} of ${fmt(c.of)}, top ${pct(c.rank, c.of)}`, title: c.name, meta: c.note,
+      body: `<h4>What it is</h4><p>${esc(c.what)}</p><h4>My approach</h4><p>${esc(c.approach)}</p><h4>Links</h4><p class="d-links">${code}${c.page ? '<br>' + link(c.page, 'Competition page') : ''}</p>` };
+  }
+  if (kind === 'project') {
+    const p = projects[i];
+    const links = [];
+    if (p.live) links.push(link(p.live, 'Live site'));
+    if (p.url) links.push(link(p.url, 'Repository on GitHub'));
+    if (p.playlist) links.push(link(profile.youtube, 'Videos on YouTube'));
+    if (!p.url && !p.live) links.push('<span class="muted">Private repository</span>');
+    const preview = p.video ? `<div class="embed"><iframe src="https://www.youtube-nocookie.com/embed/${esc(p.video)}" title="Preview" allow="encrypted-media; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>` : '';
+    return { back: 'projects', eyebrow: p.year ? `Project, ${p.year}` : 'Project', title: p.title, meta: p.stack,
+      body: `${preview}<p>${esc(p.blurb)}</p><h4>How it works</h4><p>${esc(p.details)}</p><h4>Links</h4><p class="d-links">${links.join('<br>')}</p>` };
+  }
+  if (kind === 'video') {
+    const v = videos[i];
+    return { back: 'projects', eyebrow: `YouTube, ${v.date}`, title: v.title, meta: 'From my series: a deep learning paper explained, then rebuilt in PyTorch',
+      body: `<div class="embed"><iframe src="https://www.youtube-nocookie.com/embed/${esc(v.id)}" title="${esc(v.title)}" allow="encrypted-media; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>
+             <p class="d-links">${link('https://www.youtube.com/watch?v=' + v.id, 'Watch on YouTube')}<br>${link(profile.youtube, 'Full playlist')}</p>` };
+  }
+  return null;
+}
+
+const panel = (id, title, body) => `
+  <aside class="panel" data-panel="${id}" aria-label="${title}">
+    <div class="p-head"><h2>${title}</h2><button class="p-close" data-close type="button">Hide</button></div>
+    <div class="p-body">${body}</div>
+  </aside>`;
+
+// `api.controls` and `api.onDetail` are assigned by main.js once the scene exists.
+export function buildUI(root) {
+  root.innerHTML = `
+    <header class="bar">
+      <button class="brand" data-go="about" type="button">Abdallah Melhem</button>
+      <nav aria-label="Walls">
+        ${WALLS.map(([id, l]) => `<button data-go="${id}" type="button">${l}</button>`).join('')}
+        <a class="ext" href="${esc(profile.github)}" target="_blank" rel="noopener">GitHub</a>
+      </nav>
+    </header>
+    <p class="hint" id="hint">Drag to look around. Click anything to step closer.</p>
+    <div class="compass" id="compass" aria-label="Which wall you face">
+      <div class="ring"><div class="needle" id="needle"></div></div>
+      ${WALLS.map(([id, l]) => `<button class="c-${id}" data-go="${id}" type="button" aria-label="Face the ${l} wall">${l}</button>`).join('')}
+    </div>
+    <button class="back" id="back" type="button" hidden>Step back</button>
+    ${panel('about', 'About', aboutHTML())}
+    ${panel('experiences', 'Experiences', expHTML())}
+    ${panel('projects', 'Projects', projHTML())}
+    ${panel('competitions', 'Competitions', compHTML())}
+    <aside class="panel detail" id="detail" aria-live="polite">
+      <div class="p-head"><button class="p-back" id="detail-back" type="button">Back</button><button class="p-close" data-close type="button">Hide</button></div>
+      <div class="p-body" id="detail-body"></div>
+    </aside>
+    <div class="scanner" id="scanner" hidden aria-hidden="true">
+      <i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
+      <div class="laser"></div>
+      <div class="status" id="scan-status">Scanning badge</div>
+    </div>`;
+
+  const $ = s => root.querySelector(s), $$ = s => [...root.querySelectorAll(s)];
+  const panels = Object.fromEntries($$('.panel[data-panel]').map(p => [p.dataset.panel, p]));
+  const needle = $('#needle'), back = $('#back'), hint = $('#hint');
+  const detailEl = $('#detail'), detailBody = $('#detail-body'), detailBack = $('#detail-back');
+  const scanner = $('#scanner'), scanStatus = $('#scan-status');
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const dismissed = {};
+  let open = null, focused = false, detailOpen = false;
+  const state = { panelOpen: false };
+
+  function openPanel(id) {
+    for (const k in panels) panels[k].classList.toggle('open', k === id);
+    open = id; state.panelOpen = !!id || detailOpen;
+    document.body.classList.toggle('panel-open', state.panelOpen);
+  }
+  // "Step back" and the detail's "Back to …" would mean the same thing, so only one shows at a time.
+  const syncBack = () => { back.hidden = !focused || detailOpen; };
+  function hideDetail() {
+    detailOpen = false; detailEl.classList.remove('open');
+    detailBody.innerHTML = '';
+    state.panelOpen = !!open; document.body.classList.toggle('panel-open', state.panelOpen);
+    syncBack();
+  }
+  function showDetail(kind, i) {
+    const d = detail(kind, i);
+    if (!d) return;
+    detailBack.textContent = `Back to ${d.back}`;
+    detailBack.dataset.wall = d.back;
+    detailBody.innerHTML = `<p class="eyebrow">${esc(d.eyebrow)}</p><h2>${esc(d.title)}</h2><p class="meta">${esc(d.meta)}</p>${d.body}`;
+    detailBody.scrollTop = 0;
+    detailOpen = true; detailEl.classList.add('open');
+    state.panelOpen = true; document.body.classList.add('panel-open');
+    syncBack();
+  }
+
+  $$('[data-go]').forEach(b => b.addEventListener('click', () => {
+    const id = b.dataset.go;
+    dismissed[id] = false; hideDetail();
+    // Already facing this wall: just bring its panel back.
+    if (api.controls?.wall === id && api.controls.settled) openPanel(id);
+    api.controls?.goTo(id);
+  }));
+  // "Hide" collapses the panel for now; turning away and back, or a nav button, brings it back.
+  $$('[data-close]').forEach(b => b.addEventListener('click', () => { hideDetail(); openPanel(null); }));
+  back.addEventListener('click', () => api.controls?.unfocus());
+  detailBack.addEventListener('click', () => { hideDetail(); api.controls?.unfocus(); });
+  // Whole items are clickable; the Details button and links inside them keep their own behavior.
+  $$('[data-detail]').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); const [k, i] = b.dataset.detail.split(':'); api.onDetail?.(k, +i); }));
+  $$('.item[data-item]').forEach(el => {
+    const act = e => { if (e.target.closest('a')) return; const [k, i] = el.dataset.item.split(':'); api.onDetail?.(k, +i); };
+    el.addEventListener('click', act);
+    el.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target === el) act(e); });
+  });
+
+  const api = {
+    state,
+    controls: null,
+    onDetail: null,
+    setWall(wall, settled) {
+      $$('[data-go]').forEach(b => b.classList.toggle('active', b.dataset.go === wall));
+      if (settled && !dismissed[wall]) { if (!detailOpen) openPanel(wall); else if (open !== wall) openPanel(wall); }
+      else if (!settled && !focused) { hideDetail(); openPanel(null); }
+    },
+    setYaw(yaw) { needle.style.transform = `rotate(${180 + (yaw * 180) / Math.PI}deg)`; },
+    highlight(kind, index) {
+      $$('.item.active').forEach(el => el.classList.remove('active'));
+      const el = root.querySelector(`[data-item="${kind}:${index}"]`);
+      if (el) { el.classList.add('active'); el.scrollIntoView({ block: 'center', behavior: reduced ? 'auto' : 'smooth' }); }
+    },
+    setFocused(f) { focused = f; if (!f) hideDetail(); syncBack(); },
+    open(wall) { dismissed[wall] = false; openPanel(wall); },
+    showDetail,
+    hideDetail,
+    hideHint() { hint.classList.add('gone'); },
+    // Scanner: a viewfinder that follows the badge's QR code on screen, sweeps, then reports what it read.
+    scan(getRect, label, delay = 350) {
+      return new Promise(resolve => {
+        const total = reduced ? 300 : 1100;
+        let live = true;
+        scanStatus.textContent = 'Scanning badge';
+        scanner.classList.remove('read');
+        // Timers drive the phases; the animation frame only keeps the viewfinder glued to the badge.
+        const follow = () => {
+          if (!live) return;
+          const r = getRect();
+          if (r) { scanner.style.left = `${r.x - 10}px`; scanner.style.top = `${r.y - 10}px`; scanner.style.width = `${r.w + 20}px`; scanner.style.height = `${r.h + 20}px`; }
+          requestAnimationFrame(follow);
+        };
+        setTimeout(() => { scanner.hidden = false; follow(); }, delay);
+        setTimeout(() => { scanStatus.textContent = `Read: ${label}`; scanner.classList.add('read'); }, delay + total);
+        setTimeout(() => { live = false; scanner.hidden = true; resolve(); }, delay + total + 550);
+      });
+    },
+  };
+  return api;
+}

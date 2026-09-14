@@ -1,0 +1,507 @@
+<title>Abdallah Melhem</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --void:#040a16;
+  --panel:rgba(9,22,44,.76);
+  --trace:#1a3b6b;
+  --trace-soft:rgba(26,59,107,.55);
+  --cyan:#4df3ff;
+  --blue:#3b82f6;
+  --peri:#9fb8ff;
+  --amber:#ffc257;
+  --ice:#dcebff;
+  --muted:#8aa6cf;
+  --dim:#5b7399;
+  --display:'Chakra Petch','Segoe UI',system-ui,sans-serif;
+  --body:'IBM Plex Sans','Segoe UI',system-ui,sans-serif;
+  --mono:'IBM Plex Mono',Consolas,monospace;
+  --gutter:clamp(16px,4vw,48px);
+  --chamfer:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,12px 100%,0 calc(100% - 12px));
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;color-scheme:dark}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--void);color:var(--ice);font-family:var(--body);font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body.no-webgl{background:radial-gradient(ellipse 60% 50% at 70% 35%,rgba(59,130,246,.22),transparent 70%),var(--void)}
+body.no-webgl #scene,body.no-webgl #stage{display:none}
+a:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
+
+#scene{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:0}
+#stage{position:fixed;inset:0;z-index:1;cursor:grab;touch-action:pan-y}
+#stage.grabbing{cursor:grabbing}
+
+.bar{position:sticky;top:0;z-index:3;display:flex;justify-content:space-between;align-items:center;gap:1rem;padding:.75rem var(--gutter);background:rgba(4,10,22,.74);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid rgba(77,243,255,.14)}
+.brand{font-family:var(--display);font-weight:600;color:var(--ice);text-decoration:none;letter-spacing:.02em;white-space:nowrap}
+.bar nav{display:flex;gap:clamp(.7rem,2vw,1.6rem);flex-wrap:wrap;justify-content:flex-end}
+.bar nav a{color:var(--muted);text-decoration:none;font-size:.92rem;display:inline-flex;align-items:center;gap:.45rem;transition:color .2s}
+.bar nav a:hover,.bar nav a.active{color:var(--ice)}
+.glyph{width:13px;height:13px;display:inline-block;border:1.5px solid currentColor;border-radius:50%;transform:rotateX(62deg) rotateZ(-20deg);flex:none}
+.glyph.g1{color:var(--cyan)}.glyph.g2{color:var(--blue)}.glyph.g3{color:var(--peri)}
+
+.page{position:relative;z-index:2;pointer-events:none}
+.page :is(.hero-text,.sec-head,.panel,.grid,.foot){pointer-events:auto}
+.wrap{padding-inline:var(--gutter);max-width:1240px;margin-inline:auto}
+
+.hero{min-height:80vh;display:flex;align-items:center;padding-block:3rem 4rem}
+.hero-text{max-width:600px}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(2.7rem,6.4vw,5rem);line-height:.96;letter-spacing:-.012em;margin:0 0 1.1rem;text-wrap:balance;color:#fff;text-shadow:0 0 28px rgba(77,243,255,.28)}
+.lede{font-size:1.1rem;color:var(--muted);max-width:52ch;margin:0 0 1.7rem}
+.ticker{list-style:none;padding:0;margin:0;display:flex;flex-wrap:wrap;gap:.6rem}
+.ticker li{display:flex;flex-direction:column;gap:.05rem;padding:.6rem .9rem .55rem;background:rgba(9,22,44,.82);border:1px solid var(--trace);clip-path:var(--chamfer);min-width:158px}
+.t-name{font-size:.78rem;color:var(--muted)}
+.t-rank{font-family:var(--display);font-weight:600;font-size:1.2rem;font-variant-numeric:tabular-nums;color:var(--ice)}
+.t-rank small{font-size:.85rem;font-weight:500;color:var(--muted)}
+.hud{margin:2.2rem 0 0;font-family:var(--mono);font-size:.74rem;color:var(--dim);line-height:1.75;transition:opacity .6s}
+.hud b{color:var(--cyan);font-weight:500}
+.hud.gone{opacity:.45}
+
+.sec{padding-block:3.2rem}
+.sec-head{display:flex;align-items:baseline;gap:.8rem;flex-wrap:wrap;margin-bottom:1.1rem;max-width:760px}
+.sec-head h2{font-family:var(--display);font-weight:600;font-size:clamp(1.7rem,3vw,2.3rem);margin:0;letter-spacing:.01em;display:inline-flex;align-items:center;gap:.65rem;text-shadow:0 0 18px rgba(77,243,255,.18)}
+.sec-head h2 .glyph{width:18px;height:18px}
+.sec-head p{margin:0;color:var(--muted);flex-basis:100%;max-width:60ch}
+.panel{background:var(--panel);border:1px solid var(--trace);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+
+.board .row{display:grid;grid-template-columns:minmax(0,1fr) 11rem auto;gap:1rem;align-items:center;padding:.85rem 1.1rem;border-top:1px solid var(--trace-soft);color:inherit;text-decoration:none;transition:background .15s}
+.board .row.head{font-size:.8rem;color:var(--dim);border-top:0;padding-block:.6rem}
+.board a.row:hover,.board .row:focus-within{background:rgba(77,243,255,.06)}
+.board h3{font-family:var(--display);font-weight:600;font-size:.98rem;margin:0 0 .35rem .1rem;color:var(--muted);padding:.75rem 1rem 0}
+.c-name{font-weight:500}
+.c-note{display:block;font-size:.85rem;color:var(--muted)}
+.c-host{color:var(--muted);font-size:.92rem}
+.rankcell{display:flex;align-items:center;gap:.8rem;justify-content:flex-end;min-width:15rem}
+.rank{font-family:var(--display);font-variant-numeric:tabular-nums;font-size:1.05rem;white-space:nowrap}
+.rank b{color:var(--ice);font-weight:600}
+.rank span{color:var(--muted);font-weight:500}
+.top{font-size:.8rem;padding:.15rem .5rem;border:1px solid var(--trace);color:var(--cyan);white-space:nowrap;font-variant-numeric:tabular-nums}
+.top.gold{color:var(--amber);border-color:rgba(255,194,87,.5)}
+.pending{color:var(--dim);font-size:.85rem}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1px;background:var(--trace);border:1px solid var(--trace)}
+.card{background:var(--panel);padding:1.2rem 1.25rem 1.1rem;display:flex;flex-direction:column;gap:.6rem;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);transition:background .15s}
+.card:hover{background:rgba(59,130,246,.13)}
+.card h3{font-family:var(--display);font-weight:600;font-size:1.15rem;margin:0}
+.card p{margin:0;color:var(--muted);font-size:.95rem}
+.stack{font-size:.82rem;color:var(--dim)}
+.card .links{margin-top:auto;padding-top:.4rem;display:flex;gap:1rem;font-size:.9rem}
+.card a{color:var(--cyan);text-decoration:none}
+.card a:hover{text-decoration:underline}
+.card .private{color:var(--dim)}
+
+.about{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:2.2rem;padding:1.6rem}
+.bio p{margin:0 0 1rem;max-width:56ch}
+.bio p:last-child{margin-bottom:0}
+.bio a{color:var(--cyan);text-decoration:none}
+.bio a:hover{text-decoration:underline}
+h3.sub{font-family:var(--display);font-weight:600;font-size:1rem;margin:0 0 .6rem;color:var(--ice)}
+.timeline{list-style:none;margin:0 0 1.6rem;padding:0;border-left:1px solid var(--trace)}
+.timeline:last-child{margin-bottom:0}
+.timeline li{padding:.35rem 0 .55rem 1rem;position:relative}
+.timeline li::before{content:"";position:absolute;left:-4px;top:.95rem;width:7px;height:7px;background:var(--cyan);transform:rotate(45deg)}
+.timeline.exp li::before{background:var(--peri)}
+.tl-when{font-family:var(--mono);font-size:.76rem;color:var(--dim)}
+.tl-what{display:block;font-weight:500}
+.tl-where{display:block;color:var(--muted);font-size:.9rem}
+.langs{display:flex;gap:1.4rem;flex-wrap:wrap;margin:0 0 1rem;padding:0;list-style:none;color:var(--muted);font-size:.92rem}
+.langs b{color:var(--ice);font-weight:500}
+
+.foot{padding-block:2.4rem 3rem;color:var(--dim);font-size:.85rem;display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;border-top:1px solid var(--trace-soft)}
+.foot a{color:var(--muted);text-decoration:none}
+.foot a:hover{color:var(--ice)}
+
+@media (max-width:899px){
+  .hero{min-height:auto;padding-top:48vh;align-items:flex-start}
+  .hero-text{background:var(--panel);border:1px solid var(--trace);padding:1.2rem 1.1rem;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+  h1{font-size:clamp(2.4rem,11vw,3.4rem)}
+  .about{grid-template-columns:1fr;gap:1.6rem;padding:1.2rem}
+}
+@media (max-width:760px){
+  .board .row{grid-template-columns:minmax(0,1fr) auto;gap:.75rem}
+  .board .row.head,.c-host{display:none}
+  .rankcell{flex-direction:column;align-items:flex-end;gap:.35rem;min-width:0}
+}
+</style>
+
+<canvas id="scene" aria-hidden="true"></canvas>
+<div id="stage" aria-hidden="true"></div>
+
+<header class="bar">
+  <a class="brand" href="#top">Abdallah Melhem</a>
+  <nav aria-label="Sections">
+    <a href="#competitions" data-nav="competitions"><i class="glyph g1"></i>Competitions</a>
+    <a href="#projects" data-nav="projects"><i class="glyph g2"></i>Projects</a>
+    <a href="#about" data-nav="about"><i class="glyph g3"></i>About</a>
+    <a href="https://github.com/AbdallahMelhem9" target="_blank" rel="noopener">GitHub</a>
+  </nav>
+</header>
+
+<main class="page">
+  <section class="hero wrap" id="top">
+    <div class="hero-text">
+      <h1>Abdallah Melhem</h1>
+      <p class="lede">Quant research and machine learning. Mines Paris, Sorbonne, and now the MASEF master at Paris Dauphine. Leaderboards are where I test ideas.</p>
+      <ul class="ticker" aria-label="Best results">
+        <li><span class="t-name">Qube RT Data Challenge</span><span class="t-rank">7 <small>of 1,280</small></span></li>
+        <li><span class="t-name">IMC Prosperity 4, global</span><span class="t-rank">153 <small>of 18,803</small></span></li>
+        <li><span class="t-name">Kaggle Playground</span><span class="t-rank">15 <small>of 4,319</small></span></li>
+      </ul>
+      <p class="hud" id="hud">drag the core to rotate it<br>ring I <b>competitions</b> 17 nodes<br>ring II <b>projects</b> 7 nodes<br>ring III <b>about</b> 7 nodes</p>
+    </div>
+  </section>
+
+  <section class="sec wrap" id="competitions" data-ring="competitions">
+    <div class="sec-head">
+      <h2><i class="glyph g1"></i>Competitions</h2>
+      <p>Ranked results first. Rank is the private leaderboard unless noted. Hover a row and its node lights up on the first ring.</p>
+    </div>
+    <div class="panel board">
+      <div class="row head"><span>Competition</span><span>Host</span><span class="rankcell">Rank</span></div>
+
+      <a class="row" data-node="competitions:0" href="https://github.com/AbdallahMelhem9" target="_blank" rel="noopener">
+        <span><span class="c-name">Asset allocation performance forecasting</span><span class="c-note">Returns, liquidity and turnover features, private leaderboard</span></span>
+        <span class="c-host">Qube RT</span>
+        <span class="rankcell"><span class="rank"><b>7</b> <span>of 1,280</span></span><span class="top gold">top 0.6%</span></span>
+      </a>
+      <a class="row" data-node="competitions:1" href="https://github.com/AbdallahMelhem9" target="_blank" rel="noopener">
+        <span><span class="c-name">Predicting student test scores</span><span class="c-note">102-model XGBoost ensemble gated with a categorical model</span></span>
+        <span class="c-host">Kaggle Playground Series</span>
+        <span class="rankcell"><span class="rank"><b>15</b> <span>of 4,319</span></span><span class="top gold">top 0.4%</span></span>
+      </a>
+      <a class="row" data-node="competitions:2" href="https://github.com/AbdallahMelhem9" target="_blank" rel="noopener">
+        <span><span class="c-name">IMC Prosperity 4</span><span class="c-note">Global trading strategy competition, 4th of 145 in France</span></span>
+        <span class="c-host">IMC Trading</span>
+        <span class="rankcell"><span class="rank"><b>153</b> <span>of 18,803</span></span><span class="top gold">top 0.9%</span></span>
+      </a>
+      <a class="row" data-node="competitions:3" href="https://github.com/AbdallahMelhem9" target="_blank" rel="noopener">
+        <span><span class="c-name">Hedge fund time series forecasting</span><span class="c-note">Multi-horizon, leakage-free sequential modeling</span></span>
+        <span class="c-host">Kaggle</span>
+        <span class="rankcell"><span class="rank"><b>15</b> <span>of 983</span></span><span class="top">top 1.6%</span></span>
+      </a>
+      <a class="row" data-node="competitions:4" href="https://github.com/AbdallahMelhem9" target="_blank" rel="noopener">
+        <span><span class="c-name">Murex x CMF brainteaser competition</span><span class="c-note">Quantitative puzzles under time pressure</span></span>
+        <span class="c-host">Murex, CMF</span>
+        <span class="rankcell"><span class="rank"><b>5</b> <span>of 150</span></span><span class="top">top 3.4%</span></span>
+      </a>
+      <a class="row" data-node="competitions:5" href="https://github.com/AbdallahMelhem9" target="_blank" rel="noopener">
+        <span><span class="c-name">SuperTuxKart reinforcement learning</span><span class="c-note">Custom DQN cutting 1,120 actions to 56, hybrid SAC, best reward 432.2</span></span>
+        <span class="c-host">Sorbonne University</span>
+        <span class="rankcell"><span class="rank"><b>2</b> <span>of 21</span></span><span class="top">top 10%</span></span>
+      </a>
+
+      <h3>Entered, results to add</h3>
+      <div class="row" data-node="competitions:6"><span><span class="c-name">Biohub cell tracking during development</span><span class="c-note">Cell lineage tracking in microscopy, 2026</span></span><span class="c-host">Kaggle</span><span class="rankcell"><span class="pending">rank pending</span></span></div>
+      <div class="row" data-node="competitions:7"><span><span class="c-name">Handwritten to data</span><span class="c-note">Ukrainian handwriting recognition with TrOCR and QLoRA</span></span><span class="c-host">Kaggle</span><span class="rankcell"><span class="pending">rank pending</span></span></div>
+      <div class="row" data-node="competitions:8"><span><span class="c-name">Liquidity Arena 2026</span><span class="c-note">AI quant trading competition</span></span><span class="c-host">Kaggle</span><span class="rankcell"><span class="pending">rank pending</span></span></div>
+      <div class="row" data-node="competitions:9"><span><span class="c-name">March Machine Learning Mania 2026</span><span class="c-note">Calibrated XGBoost and rating models, Brier score</span></span><span class="c-host">Kaggle</span><span class="rankcell"><span class="pending">rank pending</span></span></div>
+      <div class="row" data-node="competitions:10"><span><span class="c-name">NeuroGolf</span><span class="c-note">Smallest neural networks that solve ARC-AGI transformations</span></span><span class="c-host">Kaggle</span><span class="rankcell"><span class="pending">rank pending</span></span></div>
+      <div class="row" data-node="competitions:11"><span><span class="c-name">Orbit Wars</span><span class="c-note">Planet Wars style bot ladder, value net and rule-based agents</span></span><span class="c-host">Kaggle</span><span class="rankcell"><span class="pending">rank pending</span></span></div>
+      <div class="row" data-node="competitions:12"><span><span class="c-name">Predicting stellar class</span><span class="c-note">Playground S6E6, balanced accuracy 0.971 on the leaderboard</span></span><span class="c-host">Kaggle</span><span class="rankcell"><span class="pending">rank pending</span></span></div>
+      <div class="row" data-node="competitions:13"><span><span class="c-name">ROGII wellbore geology prediction</span><span class="c-note">Physics-informed ridge and gradient boosting</span></span><span class="c-host">Kaggle</span><span class="rankcell"><span class="pending">rank pending</span></span></div>
+      <div class="row" data-node="competitions:14"><span><span class="c-name">Soccer feature engineering hackathon</span><span class="c-note">25 team-level features from SkillCorner dynamic events</span></span><span class="c-host">SkillCorner</span><span class="rankcell"><span class="pending">rank pending</span></span></div>
+      <div class="row" data-node="competitions:15"><span><span class="c-name">Stanford RNA 3D folding</span><span class="c-note">3D structure prediction</span></span><span class="c-host">Kaggle</span><span class="rankcell"><span class="pending">rank pending</span></span></div>
+      <div class="row" data-node="competitions:16"><span><span class="c-name">Leukemia risk prediction</span><span class="c-note">Survival analysis, Cox models with molecular features, 2025</span></span><span class="c-host">Qube RT</span><span class="rankcell"><span class="pending">rank pending</span></span></div>
+    </div>
+  </section>
+
+  <section class="sec wrap" id="projects" data-ring="projects">
+    <div class="sec-head">
+      <h2><i class="glyph g2"></i>Projects</h2>
+      <p>Things I built outside a leaderboard. Each one maps to a node on the second ring.</p>
+    </div>
+    <div class="grid">
+      <article class="card" data-node="projects:0">
+        <h3>AI Applier</h3>
+        <p>Sweeps hedge fund and bank job feeds every morning, scores each posting against a CV, drafts a cover letter with a two-agent pipeline, and fills the form. It stops before Submit.</p>
+        <p class="stack">Python, FastAPI, Angular, Playwright, Claude</p>
+        <div class="links"><span class="private">Private repository</span></div>
+      </article>
+      <article class="card" data-node="projects:1">
+        <h3>Semantic Market Prediction</h3>
+        <p>Scores recession fear in financial news with an LLM ensemble, tracks it against the S&amp;P 500 and Euro Stoxx 50, and predicts next-day direction with XGBoost. Built for the BNP Paribas equity and derivatives strategy team.</p>
+        <p class="stack">Python, XGBoost, GPT and Claude ensemble, NewsAPI, Finnhub</p>
+        <div class="links"><a href="https://github.com/AbdallahMelhem9/Semantic-Market-Prediction" target="_blank" rel="noopener">Repository</a></div>
+      </article>
+      <article class="card" data-node="projects:2">
+        <h3>MASEF Helper</h3>
+        <p>A study app that turns course PDFs into readable LaTeX sections, each with an AI lecture and its own chat. A PDF you can talk to.</p>
+        <p class="stack">Angular 20, Node, Express, SQLite, Claude Agent SDK</p>
+        <div class="links"><a href="https://github.com/AbdallahMelhem9/masef-helper" target="_blank" rel="noopener">Repository</a></div>
+      </article>
+      <article class="card" data-node="projects:3">
+        <h3>Deep learning papers, rebuilt</h3>
+        <p>PyTorch re-implementations of DDPM, U-Net, VAE and a mini GPT, as runnable notebooks with accompanying videos.</p>
+        <p class="stack">PyTorch, Jupyter</p>
+        <div class="links"><a href="https://github.com/AbdallahMelhem9/Machine_learning_papers" target="_blank" rel="noopener">Repository</a></div>
+      </article>
+      <article class="card" data-node="projects:4">
+        <h3>Console chess</h3>
+        <p>A chess engine with algebraic move input, check, checkmate and stalemate detection, and saved games you can replay.</p>
+        <p class="stack">C++, CMake</p>
+        <div class="links"><a href="https://github.com/AbdallahMelhem9/Chess_CPP" target="_blank" rel="noopener">Repository</a></div>
+      </article>
+      <article class="card" data-node="projects:5">
+        <h3>Crousteam</h3>
+        <p>A mobile app that matches people on shared interests, with messaging and real-life events that carry their own group chat. Built with three classmates at Mines Paris.</p>
+        <p class="stack">React Native, Flask, PostgreSQL</p>
+        <div class="links"><a href="https://github.com/AbdallahMelhem9/Crousteam" target="_blank" rel="noopener">Repository</a></div>
+      </article>
+      <article class="card" data-node="projects:6">
+        <h3>VR drawing</h3>
+        <p>Draw in the air with a 3D brush or place voxels, then save and record the piece. Runs on the Meta Quest 2.</p>
+        <p class="stack">Unity, C#, HLSL</p>
+        <div class="links"><a href="https://github.com/AbdallahMelhem9/VR-Drawing-Project" target="_blank" rel="noopener">Repository</a></div>
+      </article>
+    </div>
+  </section>
+
+  <section class="sec wrap" id="about" data-ring="about">
+    <div class="sec-head">
+      <h2><i class="glyph g3"></i>About</h2>
+      <p>Where I studied and worked, in order. The third ring carries one node per stop.</p>
+    </div>
+    <div class="panel about">
+      <div class="bio">
+        <p>I started with two bachelor's degrees at once at the Lebanese University, telecommunication engineering in the top 1% alongside computer science. Then Paris: general engineering at Mines Paris with a geostatistics and applied probability specialty, a statistics and learning master at Sorbonne, and now the MASEF master at Paris Dauphine, where the courses are stochastic calculus, market microstructure, order book models and high-frequency trading.</p>
+        <p>Along the way I built trading platform tooling at Capital Fund Management, video-to-animation pose models at Kinetix, and a daily market data and backtesting platform at Debbas Markets. I ran the IEEE student branch for a year and taught a twelve-session full-stack bootcamp.</p>
+        <ul class="langs" aria-label="Languages"><li><b>English</b> C2</li><li><b>Arabic</b> C2</li><li><b>French</b> B2</li></ul>
+        <p><a href="mailto:abdallah.melhem@etu.minesparis.psl.eu">abdallah.melhem@etu.minesparis.psl.eu</a><br><a href="https://github.com/AbdallahMelhem9" target="_blank" rel="noopener">github.com/AbdallahMelhem9</a></p>
+      </div>
+      <div>
+        <h3 class="sub">Education</h3>
+        <ol class="timeline">
+          <li data-node="about:0"><span class="tl-when">2026 to 2027</span><span class="tl-what">Master of Mathematics, MASEF</span><span class="tl-where">Université Paris Dauphine, PSL</span></li>
+          <li data-node="about:1"><span class="tl-when">2024 to 2025</span><span class="tl-what">Master of Mathematics, Statistics and Learning</span><span class="tl-where">Sorbonne University</span></li>
+          <li data-node="about:2"><span class="tl-when">2023 to 2026</span><span class="tl-what">General engineering, geostatistics and applied probability</span><span class="tl-where">École des Mines de Paris</span></li>
+          <li data-node="about:3"><span class="tl-when">2019 to 2023</span><span class="tl-what">Dual bachelor's, telecommunication engineering and computer science</span><span class="tl-where">Lebanese University</span></li>
+        </ol>
+        <h3 class="sub">Experience</h3>
+        <ol class="timeline exp">
+          <li data-node="about:4"><span class="tl-when">Apr 2026 to Sep 2026</span><span class="tl-what">Quantitative research intern</span><span class="tl-where">Debbas Markets</span></li>
+          <li data-node="about:5"><span class="tl-when">Jul 2025 to Jan 2026</span><span class="tl-what">Generative AI R&amp;D intern</span><span class="tl-where">Kinetix</span></li>
+          <li data-node="about:6"><span class="tl-when">May 2024 to Sep 2024</span><span class="tl-what">Trading platform software engineering intern</span><span class="tl-where">Capital Fund Management</span></li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <footer class="foot wrap">
+    <span>Initial design, September 2026. Three.js scene, no framework yet.</span>
+    <span><a href="#top">Back to the core</a></span>
+  </footer>
+</main>
+
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}
+</script>
+<script type="module">
+(async () => {
+  let THREE, OrbitControls, EffectComposer, RenderPass, UnrealBloomPass, OutputPass;
+  try {
+    THREE = await import('three');
+    ({ OrbitControls } = await import('three/addons/controls/OrbitControls.js'));
+    ({ EffectComposer } = await import('three/addons/postprocessing/EffectComposer.js'));
+    ({ RenderPass } = await import('three/addons/postprocessing/RenderPass.js'));
+    ({ UnrealBloomPass } = await import('three/addons/postprocessing/UnrealBloomPass.js'));
+    ({ OutputPass } = await import('three/addons/postprocessing/OutputPass.js'));
+  } catch (e) { document.body.classList.add('no-webgl'); console.error('three.js failed to load', e); return; }
+
+  const canvas = document.getElementById('scene');
+  const stage = document.getElementById('stage');
+  const hud = document.getElementById('hud');
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const lowTier = matchMedia('(pointer: coarse)').matches || innerWidth < 900;
+  const isDesktop = () => innerWidth >= 900;
+
+  let renderer;
+  try {
+    renderer = new THREE.WebGLRenderer({ canvas, antialias: !lowTier, powerPreference: 'high-performance' });
+  } catch (e) { document.body.classList.add('no-webgl'); return; }
+  renderer.setPixelRatio(Math.min(devicePixelRatio, lowTier ? 1.5 : 2));
+  renderer.setSize(innerWidth, innerHeight);
+  renderer.setClearColor(0x040a16, 1);
+
+  const scene = new THREE.Scene();
+  scene.fog = new THREE.Fog(0x040a16, 9, 21);
+  const camera = new THREE.PerspectiveCamera(38, innerWidth / innerHeight, 0.1, 100);
+  camera.position.set(0, 1.5, 9.6);
+
+  const world = new THREE.Group();
+  scene.add(world);
+
+  // Core: a faceted crystal with lit edges and a bright nucleus.
+  const coreGeo = new THREE.IcosahedronGeometry(1.15, 1);
+  // The fill is slightly transparent so the nucleus glows through it, but it still writes depth so back edges stay hidden.
+  const coreFill = new THREE.Mesh(coreGeo, new THREE.MeshBasicMaterial({ color: 0x061a33, transparent: true, opacity: 0.72 }));
+  coreFill.renderOrder = 1;
+  const coreEdgeMat = new THREE.LineBasicMaterial({ color: 0x4df3ff, transparent: true, opacity: 0 });
+  const coreEdges = new THREE.LineSegments(new THREE.EdgesGeometry(coreGeo), coreEdgeMat);
+  coreEdges.renderOrder = 2;
+  const nucleus = new THREE.Mesh(new THREE.IcosahedronGeometry(0.42, 0), new THREE.MeshBasicMaterial({ color: 0xb8fbff }));
+  const shell = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.IcosahedronGeometry(0.74, 0)), new THREE.LineBasicMaterial({ color: 0x3b82f6, transparent: true, opacity: 0.9 }));
+  shell.renderOrder = 0;
+  const core = new THREE.Group();
+  core.add(coreFill, coreEdges, nucleus, shell);
+  world.add(core);
+
+  // Three rings, one per section. Node counts match the DOM.
+  const RINGS = [
+    { id: 'competitions', color: 0x4df3ff, radius: 2.35, tilt: [1.15, 0, 0.35], count: 17, speed: 0.10 },
+    { id: 'projects',     color: 0x3b82f6, radius: 2.95, tilt: [1.45, 0, -0.6], count: 7,  speed: -0.07 },
+    { id: 'about',        color: 0x9fb8ff, radius: 3.55, tilt: [0.55, 0, 1.1],  count: 7,  speed: 0.05 },
+  ];
+  const nodeGeo = new THREE.SphereGeometry(0.065, 12, 12);
+  const white = new THREE.Color(0xffffff);
+  const rings = {};
+  RINGS.forEach((cfg, i) => {
+    const g = new THREE.Group();
+    g.rotation.set(cfg.tilt[0], cfg.tilt[1], cfg.tilt[2]);
+    g.scale.setScalar(reduced ? 1 : 0.2);
+    const mat = new THREE.MeshBasicMaterial({ color: cfg.color, transparent: true, opacity: 0.55 });
+    const torus = new THREE.Mesh(new THREE.TorusGeometry(cfg.radius, 0.012, 6, 200), mat);
+    torus.rotation.x = Math.PI / 2;
+    const spin = new THREE.Group();
+    const base = new THREE.Color(cfg.color);
+    const nodes = [];
+    for (let k = 0; k < cfg.count; k++) {
+      const a = (k / cfg.count) * Math.PI * 2;
+      const m = new THREE.Mesh(nodeGeo, new THREE.MeshBasicMaterial({ color: cfg.color }));
+      m.position.set(Math.cos(a) * cfg.radius, 0, Math.sin(a) * cfg.radius);
+      m.userData.pulse = 0;
+      nodes.push(m);
+      spin.add(m);
+    }
+    const runner = new THREE.Mesh(new THREE.SphereGeometry(0.085, 12, 12), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+    spin.add(runner);
+    g.add(torus, spin);
+    world.add(g);
+    rings[cfg.id] = { cfg, g, mat, spin, nodes, runner, base, emphasis: 0.5, target: 0.5, phase: i * 2.1, order: i };
+  });
+
+  // Particle field for depth.
+  const N = lowTier ? 450 : 1200;
+  const pos = new Float32Array(N * 3);
+  for (let i = 0; i < N; i++) {
+    const r = 4 + Math.random() * 6.5;
+    const t = Math.random() * Math.PI * 2;
+    const p = Math.acos(2 * Math.random() - 1);
+    pos[i * 3] = r * Math.sin(p) * Math.cos(t);
+    pos[i * 3 + 1] = r * Math.cos(p) * 0.7;
+    pos[i * 3 + 2] = r * Math.sin(p) * Math.sin(t);
+  }
+  const ptsGeo = new THREE.BufferGeometry();
+  ptsGeo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  const pts = new THREE.Points(ptsGeo, new THREE.PointsMaterial({ color: 0x3b82f6, size: 0.045, sizeAttenuation: true, transparent: true, opacity: 0.7, blending: THREE.AdditiveBlending, depthWrite: false }));
+  world.add(pts);
+
+  const grid = new THREE.GridHelper(36, 36, 0x1a3b6b, 0x0e2447);
+  grid.position.y = -2.7;
+  scene.add(grid);
+
+  // Bloom only where the GPU can afford it.
+  let composer = null, bloom = null;
+  if (!lowTier) {
+    composer = new EffectComposer(renderer);
+    composer.addPass(new RenderPass(scene, camera));
+    bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 0.78, 0.45, 0.2);
+    composer.addPass(bloom);
+    composer.addPass(new OutputPass());
+  }
+
+  const controls = new OrbitControls(camera, stage);
+  controls.enableZoom = false;
+  controls.enablePan = false;
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.06;
+  controls.rotateSpeed = 0.6;
+  controls.minPolarAngle = 0.55;
+  controls.maxPolarAngle = 2.4;
+  controls.autoRotate = !reduced;
+  controls.autoRotateSpeed = 0.7;
+  stage.style.touchAction = 'pan-y';
+  let idle;
+  controls.addEventListener('start', () => { controls.autoRotate = false; stage.classList.add('grabbing'); hud.classList.add('gone'); clearTimeout(idle); });
+  controls.addEventListener('end', () => { stage.classList.remove('grabbing'); idle = setTimeout(() => { controls.autoRotate = !reduced; }, 2500); });
+
+  function layout() {
+    const w = innerWidth, h = innerHeight;
+    renderer.setSize(w, h);
+    camera.aspect = w / h;
+    // Keep the whole ring set inside the viewport: further camera, smaller sideways shift on narrow desktops.
+    if (isDesktop()) { camera.position.z = 11.2; camera.setViewOffset(w, h, -w * (w > 1400 ? 0.2 : 0.15), 0, w, h); }
+    else { camera.position.z = 13.5; camera.setViewOffset(w, h, 0, h * 0.22, w, h); }
+    camera.updateProjectionMatrix();
+    if (composer) { composer.setSize(w, h); bloom.setSize(w, h); }
+  }
+  layout();
+  addEventListener('resize', layout);
+
+  // Active section drives which ring is emphasized.
+  const setActive = (id) => {
+    for (const k in rings) rings[k].target = id ? (k === id ? 1 : 0.12) : 0.5;
+    document.querySelectorAll('[data-nav]').forEach(a => a.classList.toggle('active', a.dataset.nav === id));
+  };
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) setActive(e.target.dataset.ring || null); });
+  }, { rootMargin: '-35% 0px -45% 0px', threshold: 0 });
+  document.querySelectorAll('[data-ring], #top').forEach(el => io.observe(el));
+
+  // Hover on a row or card pulses its node.
+  document.querySelectorAll('[data-node]').forEach(el => {
+    const [ring, idx] = el.dataset.node.split(':');
+    const node = rings[ring] && rings[ring].nodes[+idx];
+    if (!node) return;
+    const fire = () => { node.userData.pulse = 1; };
+    el.addEventListener('pointerenter', fire);
+    el.addEventListener('focusin', fire);
+  });
+
+  const ease = x => 1 - Math.pow(1 - Math.min(Math.max(x, 0), 1), 3);
+  const clock = new THREE.Clock();
+  let boot = reduced ? 10 : 0;
+  const tmp = new THREE.Color();
+
+  function frame() {
+    requestAnimationFrame(frame);
+    const dt = Math.min(clock.getDelta(), 0.05);
+    boot += dt;
+
+    coreEdgeMat.opacity = 0.9 * ease(boot / 1.1);
+    if (!reduced) {
+      core.rotation.y += dt * 0.25;
+      core.rotation.x = Math.sin(boot * 0.35) * 0.18;
+      nucleus.rotation.y -= dt * 0.6;
+      nucleus.rotation.z += dt * 0.3;
+      shell.rotation.x += dt * 0.4;
+      pts.rotation.y += dt * 0.012;
+    }
+    const s = 1 + Math.sin(boot * 2.2) * 0.06;
+    nucleus.scale.setScalar(s);
+
+    for (const k in rings) {
+      const r = rings[k];
+      const sc = ease((boot - 0.25 - r.order * 0.22) / 0.9);
+      r.g.scale.setScalar(0.2 + 0.8 * sc);
+      r.emphasis += (r.target - r.emphasis) * 0.06;
+      r.mat.opacity = (0.22 + 0.7 * r.emphasis) * sc;
+      if (!reduced) r.spin.rotation.y += r.cfg.speed * dt;
+      r.phase += dt * (reduced ? 0 : 0.7);
+      r.runner.position.set(Math.cos(r.phase) * r.cfg.radius, 0, Math.sin(r.phase) * r.cfg.radius);
+      r.runner.material.opacity = r.emphasis;
+      r.runner.scale.setScalar(0.5 + 0.7 * r.emphasis);
+      for (const m of r.nodes) {
+        const p = m.userData.pulse;
+        m.scale.setScalar((0.65 + 0.55 * r.emphasis) * (1 + 1.3 * p));
+        tmp.copy(r.base).lerp(white, p);
+        m.material.color.copy(tmp);
+        m.userData.pulse = p * 0.94;
+      }
+    }
+
+    controls.update();
+    if (composer) composer.render(); else renderer.render(scene, camera);
+  }
+  frame();
+})();
+</script>

@@ -1,0 +1,12 @@
+# Render blueprint: New > Blueprint > pick this repo, and Render builds the static site from it.
+services:
+  - type: web
+    name: abdallah-portfolio
+    runtime: static
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist
+    pullRequestPreviewsEnabled: false
+    headers:
+      - path: /*
+        name: Cache-Control
+        value: public, max-age=600
