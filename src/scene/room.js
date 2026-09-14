@@ -166,14 +166,19 @@ export function buildRoom(scene, lowTier) {
   // ---------- Competitions wall: the leaderboard ----------
   const C = walls.competitions;
   const lb = S.leaderboard(competitions.ranked, competitions.entered.length);
-  screen(C, { w: 4.6, h: 2.4, x: 0, y: 2.15, z: 0.03, tex: lb.texture, kind: 'leaderboard', index: -1, rows: lb.rows, dist: 3.4, wall: 'competitions', glow: 1.15 });
+  screen(C, { w: 4.6, h: 2.4, x: 0, y: 2.15, z: 0.03, tex: lb.texture, kind: 'leaderboard', index: -1, rows: lb.rows, dist: 5.2, wall: 'competitions', glow: 1.15 });
+  // A translucent bar that marks the selected row on the screen itself.
+  const board = interactives[interactives.length - 1];
+  const mark = add(new THREE.PlaneGeometry(4.5, 1), new THREE.MeshBasicMaterial({ color: 0x4df3ff, transparent: true, opacity: 0.16, depthWrite: false, toneMapped: false }), 0, 0, 0.003, board.mesh);
+  mark.visible = false;
+  board.mark = mark;
   competitions.ranked.slice(0, 3).forEach((r, i) => {
     const x = (i - 1) * 0.8;
     add(new THREE.BoxGeometry(0.07, 0.34, 0.012), new THREE.MeshStandardMaterial({ color: 0x2a5bd7, roughness: 0.7 }), x, 0.72, 0.04, C);
     // Unlit materials: under the cyan wall light a lit amber turns green.
     add(new THREE.CylinderGeometry(0.15, 0.15, 0.025, 32), new THREE.MeshBasicMaterial({ color: 0xb8862e }), x, 0.5, 0.05, C).rotation.x = Math.PI / 2;
     const face = add(new THREE.CircleGeometry(0.15, 32), new THREE.MeshBasicMaterial({ map: S.medal(r.rank), transparent: true }), x, 0.5, 0.065, C);
-    interactives.push({ mesh: face, kind: 'competition', index: i, dist: 0.9, wall: 'competitions' });
+    interactives.push({ mesh: face, kind: 'competition', index: i, dist: 1.7, wall: 'competitions' });
   });
   add(new THREE.PlaneGeometry(1.4, 0.2), new THREE.MeshBasicMaterial({ map: S.label('top 1 percent'), transparent: true, toneMapped: false, color: hdr(0xffffff, 1.2) }), 0, 0.22, 0.04, C);
   point(0x4df3ff, 12, 8, 0, 2.4, 1.8, C);
@@ -187,9 +192,10 @@ export function buildRoom(scene, lowTier) {
     add(new THREE.CylinderGeometry(0.004, 0.004, 1.2), M.metal, 0, -0.6, 0, g);
     add(new THREE.BoxGeometry(0.09, 0.06, 0.02), M.metal, 0, -1.22, 0, g);
     // The QR encodes a deep link to this badge, so a phone pointed at the screen lands on the same internship.
-    const b = S.badge(e, `${location.origin}${location.pathname}#experiences/${e.slug}`);
+    const qrText = `${location.origin}${location.pathname}#experiences/${e.slug}`;
+    const b = S.badge(e, qrText);
     const card = add(new THREE.PlaneGeometry(0.74, 1.07), new THREE.MeshStandardMaterial({ map: b.texture, roughness: 0.65, side: THREE.DoubleSide }), 0, -1.78, 0, g);
-    interactives.push({ mesh: card, kind: 'experience', index: i, dist: 1.15, wall: 'experiences', qr: b.qr });
+    interactives.push({ mesh: card, kind: 'experience', index: i, dist: 1.3, wall: 'experiences', qr: b.qr, qrText });
     perFrame.push(t => { g.rotation.z = Math.sin(t * 0.9 + i * 1.7) * 0.035; g.rotation.x = Math.sin(t * 0.6 + i) * 0.02; });
     add(new THREE.SphereGeometry(0.045, 12, 12), new THREE.MeshBasicMaterial({ color: hdr(e.accent, 2.4), toneMapped: false }), x, 1.35, 0.05, E);
     add(new THREE.PlaneGeometry(0.7, 0.1), new THREE.MeshBasicMaterial({ map: S.label(e.year), transparent: true, toneMapped: false, color: hdr(0xffffff, 1.2) }), x, 1.12, 0.04, E);

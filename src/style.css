@@ -89,18 +89,22 @@ body.ready #scene { opacity: 1; }
 .embed { aspect-ratio: 16 / 9; width: 100%; margin: .2rem 0 1rem; background: #000; border: 1px solid var(--trace); }
 .embed iframe { width: 100%; height: 100%; border: 0; display: block; }
 
-/* Badge scanner: a viewfinder that follows the QR code on screen */
-.scanner { position: fixed; z-index: 6; pointer-events: none; }
-.scanner .c { position: absolute; width: 18px; height: 18px; border: 2px solid var(--cyan); filter: drop-shadow(0 0 6px var(--cyan)); }
-.scanner .tl { left: 0; top: 0; border-right: 0; border-bottom: 0; }
-.scanner .tr { right: 0; top: 0; border-left: 0; border-bottom: 0; }
-.scanner .bl { left: 0; bottom: 0; border-right: 0; border-top: 0; }
-.scanner .br { right: 0; bottom: 0; border-left: 0; border-top: 0; }
-.scanner .laser { position: absolute; left: 6%; right: 6%; top: 6%; height: 2px; background: var(--cyan); box-shadow: 0 0 14px 2px var(--cyan); animation: sweep 1.5s ease-in-out infinite; }
-.scanner.read .laser { animation: none; top: 50%; opacity: .35; }
-.scanner .status { position: absolute; left: 50%; top: calc(100% + 12px); transform: translateX(-50%); font: 500 .78rem var(--mono); color: var(--cyan); white-space: nowrap; background: rgba(4, 10, 22, .85); border: 1px solid var(--trace); padding: .3rem .65rem; }
+/* Badge scanner: a small QR card in front of the room, swept by a laser, then dismissed */
+.scanner { position: fixed; left: 30%; top: 50%; transform: translate(-50%, -50%); z-index: 6; pointer-events: none; display: flex; flex-direction: column; align-items: center; gap: .7rem; }
+.scanner[hidden] { display: none; }
+.scan-card { position: relative; width: 196px; height: 196px; padding: 12px; background: #fff; border-radius: 6px; box-shadow: 0 0 0 1px var(--trace), 0 0 40px rgba(77, 243, 255, .35); }
+.scan-card img { width: 100%; height: 100%; display: block; image-rendering: pixelated; }
+.scanner .c { position: absolute; width: 22px; height: 22px; border: 3px solid var(--cyan); filter: drop-shadow(0 0 6px var(--cyan)); }
+.scanner .tl { left: -10px; top: -10px; border-right: 0; border-bottom: 0; }
+.scanner .tr { right: -10px; top: -10px; border-left: 0; border-bottom: 0; }
+.scanner .bl { left: -10px; bottom: -10px; border-right: 0; border-top: 0; }
+.scanner .br { right: -10px; bottom: -10px; border-left: 0; border-top: 0; }
+.scanner .laser { position: absolute; left: 6px; right: 6px; top: 8px; height: 3px; background: var(--cyan); box-shadow: 0 0 14px 3px var(--cyan); }
+.scanner.read .laser { display: none; }
+.scanner.read .scan-card { box-shadow: 0 0 0 2px var(--cyan), 0 0 48px rgba(77, 243, 255, .6); }
+.scanner .status { font: 500 .82rem var(--mono); color: var(--cyan); white-space: nowrap; background: rgba(4, 10, 22, .88); border: 1px solid var(--trace); padding: .35rem .75rem; }
 .scanner.read .status { color: var(--ice); border-color: var(--cyan); }
-@keyframes sweep { 0% { top: 6%; } 50% { top: 94%; } 100% { top: 6%; } }
+.scanner.read .status::before { content: "\2713\00a0"; color: var(--cyan); }
 .item ul { margin: .3rem 0 .5rem; padding-left: 1.1rem; color: var(--muted); }
 .item li { margin: .25rem 0; }
 .item p { margin-bottom: .5rem; }
@@ -145,9 +149,11 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--cyan); outline-
   body.panel-open .compass { bottom: calc(var(--sheet-h) + .5rem); }
   body.panel-open .back { bottom: calc(var(--sheet-h) + .8rem); }
   body.panel-open .hint { bottom: calc(var(--sheet-h) + 6.4rem); }
+  .scanner { left: 50%; top: 26%; }
+  .scan-card { width: 160px; height: 160px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .panel, #scene, .needle, .item { transition: none; }
-  .scanner .laser { animation: none; top: 50%; }
+  .scanner .laser { top: 50%; }
 }

@@ -126,8 +126,11 @@ export function buildUI(root) {
       <div class="p-body" id="detail-body"></div>
     </aside>
     <div class="scanner" id="scanner" hidden aria-hidden="true">
-      <i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
-      <div class="laser"></div>
+      <div class="scan-card">
+        <img id="scan-img" alt="">
+        <i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
+        <div class="laser"></div>
+      </div>
       <div class="status" id="scan-status">Scanning badge</div>
     </div>`;
 
@@ -135,7 +138,8 @@ export function buildUI(root) {
   const panels = Object.fromEntries($$('.panel[data-panel]').map(p => [p.dataset.panel, p]));
   const needle = $('#needle'), back = $('#back'), hint = $('#hint');
   const detailEl = $('#detail'), detailBody = $('#detail-body'), detailBack = $('#detail-back');
-  const scanner = $('#scanner'), scanStatus = $('#scan-status');
+  const scanner = $('#scanner'), scanStatus = $('#scan-status'), scanImg = $('#scan-img');
+  let scanTimers = [];
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const dismissed = {};
   let open = null, focused = false, detailOpen = false;
@@ -200,30 +204,47 @@ export function buildUI(root) {
       const el = root.querySelector(`[data-item="${kind}:${index}"]`);
       if (el) { el.classList.add('active'); el.scrollIntoView({ block: 'center', behavior: reduced ? 'auto' : 'smooth' }); }
     },
-    setFocused(f) { focused = f; if (!f) hideDetail(); syncBack(); },
+    setFocused(f) { focused = f; if (!f) { hideDetail(); api.cancelScan(); } syncBack(); },
     open(wall) { dismissed[wall] = false; openPanel(wall); },
     showDetail,
     hideDetail,
     hideHint() { hint.classList.add('gone'); },
-    // Scanner: a viewfinder that follows the badge's QR code on screen, sweeps, then reports what it read.
-    scan(getRect, label, delay = 350) {
+    // Scanner: a small QR card pops up in front of the room, a laser sweeps it, it reports what it read, then it goes away.
+    scan(qrSrc, label) {
+      scanTimers.forEach(clearTimeout); scanTimers = [];
+      // The card's pop-in and fade-out are driven by animation frames, not CSS animations, so they cannot stall.
+      const tween = (from, to, ms) => new Promise(done => {
+        const t0 = performance.now();
+        const step = () => {
+          const k = reduced ? 1 : Math.min(1, (performance.now() - t0) / ms);
+          const e = 1 - Math.pow(1 - k, 3), v = from + (to - from) * e;
+          scanner.style.opacity = v;
+          scanner.style.transform = `translate(-50%, -50%) scale(${0.85 + 0.15 * v})`;
+          if (k < 1) requestAnimationFrame(step); else done();
+        };
+        step();
+      });
       return new Promise(resolve => {
-        const total = reduced ? 300 : 1100;
-        let live = true;
+        const sweep = reduced ? 250 : 1100;
+        scanImg.src = qrSrc;
         scanStatus.textContent = 'Scanning badge';
         scanner.classList.remove('read');
-        // Timers drive the phases; the animation frame only keeps the viewfinder glued to the badge.
-        const follow = () => {
-          if (!live) return;
-          const r = getRect();
-          if (r) { scanner.style.left = `${r.x - 10}px`; scanner.style.top = `${r.y - 10}px`; scanner.style.width = `${r.w + 20}px`; scanner.style.height = `${r.h + 20}px`; }
-          requestAnimationFrame(follow);
+        scanner.style.opacity = 0;
+        scanner.hidden = false;
+        tween(0, 1, 220);
+        // Laser: down and back up once over the sweep.
+        const laser = scanner.querySelector('.laser'), t0 = performance.now();
+        const sweepStep = () => {
+          const k = Math.min(1, (performance.now() - t0) / sweep);
+          laser.style.top = `${5 + (1 - Math.cos(k * Math.PI * 2)) / 2 * 89}%`;
+          if (k < 1 && !scanner.hidden) requestAnimationFrame(sweepStep);
         };
-        setTimeout(() => { scanner.hidden = false; follow(); }, delay);
-        setTimeout(() => { scanStatus.textContent = `Read: ${label}`; scanner.classList.add('read'); }, delay + total);
-        setTimeout(() => { live = false; scanner.hidden = true; resolve(); }, delay + total + 550);
+        if (!reduced) sweepStep();
+        scanTimers.push(setTimeout(() => { scanStatus.textContent = `Read: ${label}`; scanner.classList.add('read'); }, sweep));
+        scanTimers.push(setTimeout(() => tween(1, 0, 260).then(() => { scanner.hidden = true; resolve(); }), sweep + 600));
       });
     },
+    cancelScan() { scanTimers.forEach(clearTimeout); scanTimers = []; scanner.hidden = true; },
   };
   return api;
 }

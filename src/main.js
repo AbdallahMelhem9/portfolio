@@ -7,6 +7,7 @@ import { buildRoom } from './scene/room.js';
 import { RoomControls } from './controls.js';
 import { buildUI } from './ui.js';
 import { experiences, projects, videos, competitions } from './data.js';
+import { qrImage } from './scene/screens.js';
 import './style.css';
 
 const WALL_IDS = ['about', 'projects', 'competitions', 'experiences'];
@@ -47,7 +48,7 @@ async function start() {
 
   const controls = new RoomControls(camera, canvas, {
     onWall: (wall, settled) => ui.setWall(wall, settled),
-    onFocus: f => ui.setFocused(f),
+    onFocus: f => { ui.setFocused(f); if (!f) for (const it of room.interactives) if (it.mark) it.mark.visible = false; },
     onDrag: () => ui.hideHint(),
     onClick: (x, y) => {
       const p = pick(x, y);
@@ -81,20 +82,7 @@ async function start() {
 
   function worldNormal(mesh) { return new THREE.Vector3(0, 0, 1).applyQuaternion(mesh.getWorldQuaternion(Q)); }
 
-  // Screen rectangle of a badge's QR code, recomputed every frame while the scanner runs.
-  function qrRect(it) {
-    const { u0, u1, v0, v1 } = it.qr, g = it.mesh.geometry.parameters;
-    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
-    for (const [u, v] of [[u0, v0], [u1, v0], [u1, v1], [u0, v1]]) {
-      V.set((u - 0.5) * g.width, (v - 0.5) * g.height, 0.01);
-      it.mesh.localToWorld(V).project(camera);
-      const [sx, sy] = toScreen(V);
-      x0 = Math.min(x0, sx); y0 = Math.min(y0, sy); x1 = Math.max(x1, sx); y1 = Math.max(y1, sy);
-    }
-    return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 };
-  }
-
-  let scanning = false, scanIt = null;
+  let scanIt = null;
   function activate(it, hit, rowOverride) {
     const mesh = it.mesh;
     const p = mesh.getWorldPosition(new THREE.Vector3()), n = worldNormal(mesh);
@@ -104,9 +92,10 @@ async function start() {
         let row = rowOverride;
         if (row == null && hit?.uv) row = it.rows.findIndex(b => hit.uv.y >= b.v0 && hit.uv.y <= b.v1);
         if (row == null || row < 0) { controls.focusOn(p, n, it.dist); ui.open('competitions'); return; }
-        const b = it.rows[row];
-        const local = new THREE.Vector3(0, ((b.v0 + b.v1) / 2 - 0.5) * mesh.geometry.parameters.height, 0);
-        controls.focusOn(mesh.localToWorld(local), n, 1.5);
+        // A gentle step toward the whole screen; the chosen row is marked on the screen and opened in the panel.
+        const b = it.rows[row], H = mesh.geometry.parameters.height;
+        if (it.mark) { it.mark.position.y = ((b.v0 + b.v1) / 2 - 0.5) * H; it.mark.scale.y = (b.v1 - b.v0) * H; it.mark.visible = true; }
+        controls.focusOn(p, n, it.dist);
         ui.open('competitions'); ui.highlight('competition', row); ui.showDetail('competition', row);
         return;
       }
@@ -114,11 +103,8 @@ async function start() {
         controls.focusOn(p, n, it.dist);
         ui.open('experiences'); ui.highlight('experience', it.index); ui.hideDetail();
         scanIt = it;
-        if (scanning) return;
-        scanning = true;
-        ui.scan(() => qrRect(scanIt), experiences[it.index].company).then(() => {
-          scanning = false;
-          if (controls.focus && scanIt) ui.showDetail('experience', scanIt.index);
+        ui.scan(qrImage(it.qrText), experiences[it.index].company).then(() => {
+          if (controls.focus && scanIt === it) ui.showDetail('experience', it.index);
         });
         return;
       }
@@ -143,8 +129,7 @@ async function start() {
   // From the panel (or a deep link): find the object for an item and step up to it.
   function activateByKind(kind, index) {
     if (kind === 'competition') {
-      const medal = room.interactives.find(x => x.kind === 'competition' && x.index === index);
-      if (medal) return activate(medal, null);
+      // From the panel, the leaderboard row is the informative view; medals are for clicking in the room.
       const board = room.interactives.find(x => x.kind === 'leaderboard');
       if (board) return activate(board, null, index);
     }

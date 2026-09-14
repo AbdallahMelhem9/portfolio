@@ -222,6 +222,22 @@ export function projectScreen(p) {
   return toTexture(c);
 }
 
+// Draws a QR code (with a one-module quiet zone) into a square of the given size.
+export function drawQR(ctx, text, x, y, size) {
+  const qr = qrcode(0, 'M'); qr.addData(text); qr.make();
+  const n = qr.getModuleCount(), m = size / (n + 2);
+  ctx.fillStyle = '#ffffff'; ctx.fillRect(x, y, size, size);
+  ctx.fillStyle = '#071226';
+  for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) if (qr.isDark(r, c)) ctx.fillRect(x + (c + 1) * m, y + (r + 1) * m, m + 0.4, m + 0.4);
+}
+
+// The same QR as an image URL, for the scanner card in the page.
+export function qrImage(text, size = 256) {
+  const [c, ctx] = makeCanvas(size, size);
+  drawQR(ctx, text, 0, 0, size);
+  return c.toDataURL('image/png');
+}
+
 // A hanging conference badge for each internship, with a real QR code that deep-links to it.
 // Returns the texture plus the QR's rectangle in texture coordinates, so the scanner overlay can find it.
 export function badge(e, qrText) {
@@ -240,11 +256,7 @@ export function badge(e, qrText) {
   wrap(ctx, e.skills, 40, y + 18, w - 80, 32, 3);
 
   const size = 190, qx = 40, qy = h - 36 - size;
-  const qr = qrcode(0, 'M'); qr.addData(qrText); qr.make();
-  const n = qr.getModuleCount(), m = size / (n + 2);
-  ctx.fillStyle = '#ffffff'; ctx.fillRect(qx, qy, size, size);
-  ctx.fillStyle = '#071226';
-  for (let r = 0; r < n; r++) for (let col = 0; col < n; col++) if (qr.isDark(r, col)) ctx.fillRect(qx + (col + 1) * m, qy + (r + 1) * m, m + 0.4, m + 0.4);
+  drawQR(ctx, qrText, qx, qy, size);
   const tx = qx + size + 24;
   ctx.fillStyle = '#0b1a31'; ctx.font = `700 34px ${FONT.display}`; ctx.fillText('scan me', tx, qy + 60);
   ctx.fillStyle = '#4b5f7d'; ctx.font = `400 22px ${FONT.body}`; wrap(ctx, 'or click the badge', tx, qy + 96, w - tx - 36, 28, 2);
