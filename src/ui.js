@@ -10,7 +10,6 @@ const pct = (r, of) => { const t = topPercent(r, of); return `${t < 10 ? t.toFix
 
 function aboutHTML() {
   return `
-    <p class="welcome">Welcome to Abdallah's trading desk.</p>
     <p class="lede">${esc(profile.tagline)}. ${esc(profile.intro)}</p>
     ${profile.bio.map(p => `<p>${esc(p)}</p>`).join('')}
     <h3>Education</h3>
@@ -52,7 +51,7 @@ function projHTML() {
 function compHTML() {
   const ranked = competitions.ranked.map((r, i) => `
     <article class="item" data-item="competition:${i}" tabindex="0">
-      <div class="rankline"><span class="rank">${r.rank} <small>of ${fmt(r.of)}</small></span><span class="top${topPercent(r.rank, r.of) <= 1 ? ' gold' : ''}">top ${pct(r.rank, r.of)}</span></div>
+      <div class="rankline"><span class="rank">${r.rank} <small>of ${fmt(r.of)}</small></span><span class="top ${esc(r.medal || '')}">top ${pct(r.rank, r.of)}</span></div>
       <h3>${esc(r.name)}</h3>
       <p class="meta">${esc(r.host)}</p>
       <p>${esc(r.note)}</p>
@@ -83,10 +82,13 @@ function detail(kind, i) {
     if (p.url) links.push(link(p.url, 'Repository on GitHub'));
     if (p.playlist) links.push(link(profile.youtube, 'Videos on YouTube'));
     if (!p.url && !p.live) links.push('<span class="muted">Private repository</span>');
-    // `video` is a YouTube id of a demo; the section only appears once one exists.
-    const demo = p.video ? `<h4>Demo</h4><div class="embed"><iframe src="https://www.youtube-nocookie.com/embed/${esc(p.video)}" title="Demo of ${esc(p.title)}" allow="encrypted-media; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>` : '';
+    // A demo loops silently: `demo` is a video file under public/ (for example 'demos/masef-helper.mp4'),
+    // `video` a YouTube id. The section only appears once one exists, with the links right under it.
+    let demo = '';
+    if (p.demo) demo = `<h4>Demo</h4><div class="embed"><video src="${esc(import.meta.env.BASE_URL + p.demo)}" autoplay muted loop playsinline preload="metadata" aria-label="Demo of ${esc(p.title)}"></video></div>`;
+    else if (p.video) demo = `<h4>Demo</h4><div class="embed"><iframe src="https://www.youtube-nocookie.com/embed/${esc(p.video)}?autoplay=1&mute=1&loop=1&playlist=${esc(p.video)}&controls=0&rel=0" title="Demo of ${esc(p.title)}" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>`;
     return { back: 'projects', eyebrow: p.year ? `Project, ${p.year}` : 'Project', title: p.title, meta: p.stack,
-      body: `<p>${esc(p.blurb)}</p>${demo}<h4>How it works</h4><p>${esc(p.details)}</p><h4>Links</h4><p class="d-links">${links.join('<br>')}</p>` };
+      body: `<p>${esc(p.blurb)}</p>${demo}<p class="d-links">${links.join('<br>')}</p><h4>How it works</h4><p>${esc(p.details)}</p>` };
   }
   if (kind === 'video') {
     const v = videos[i];
@@ -217,14 +219,19 @@ export function buildUI(root) {
       // The card's pop-in and fade-out are driven by animation frames, not CSS animations, so they cannot stall.
       const tween = (from, to, ms) => new Promise(done => {
         const t0 = performance.now();
+        let finished = false;
+        const finish = () => { if (finished) return; finished = true; scanner.style.opacity = to; scanner.style.transform = `translate(-50%, -50%) scale(${0.85 + 0.15 * to})`; done(); };
         const step = () => {
+          if (finished) return;
           const k = reduced ? 1 : Math.min(1, (performance.now() - t0) / ms);
           const e = 1 - Math.pow(1 - k, 3), v = from + (to - from) * e;
           scanner.style.opacity = v;
           scanner.style.transform = `translate(-50%, -50%) scale(${0.85 + 0.15 * v})`;
-          if (k < 1) requestAnimationFrame(step); else done();
+          if (k < 1) requestAnimationFrame(step); else finish();
         };
         step();
+        // Animation frames pause in a background tab; a timer guarantees the tween still ends.
+        setTimeout(finish, ms + 120);
       });
       return new Promise(resolve => {
         const sweep = reduced ? 250 : 1100;

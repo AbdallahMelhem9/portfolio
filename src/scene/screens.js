@@ -12,6 +12,9 @@ export const INK = {
   bg: '#050d1c', bar: '#0a1830', line: '#173a68', cyan: '#4df3ff', blue: '#3b82f6',
   ice: '#dcebff', muted: '#8aa6cf', dim: '#5b7399', amber: '#ffc257', white: '#f4f9ff', red: '#ff8a94',
 };
+// Medal colors: face and rim.
+export const METAL = { gold: '#ffc257', silver: '#d3dceb', bronze: '#d4915c' };
+const RIM = { gold: '#b8862e', silver: '#7f8ca3', bronze: '#7d4f2b' };
 
 export function makeCanvas(w, h) {
   const c = document.createElement('canvas');
@@ -194,14 +197,15 @@ export function leaderboard(ranked, total) {
   ranked.forEach((r, i) => {
     const yTop = bh + 70 + rowH * i, y = yTop + rowH / 2;
     rows.push({ v0: 1 - (yTop + rowH) / h, v1: 1 - yTop / h });
-    const top = (100 * r.rank) / r.of, gold = top <= 1;
+    const top = (100 * r.rank) / r.of;
+    const metal = METAL[r.medal] || INK.cyan;
     if (i % 2) { ctx.fillStyle = 'rgba(10,24,48,.65)'; ctx.fillRect(30, y - rowH / 2, w - 60, rowH); }
     ctx.textAlign = 'left';
-    ctx.fillStyle = gold ? INK.amber : INK.cyan; ctx.font = `700 46px ${FONT.display}`; ctx.fillText(String(r.rank), 60, y);
+    ctx.fillStyle = metal; ctx.font = `700 46px ${FONT.display}`; ctx.fillText(String(r.rank), 60, y);
     ctx.fillStyle = INK.muted; ctx.font = `500 24px ${FONT.mono}`; ctx.fillText(`of ${r.of.toLocaleString('en-US')}`, 170, y + 3);
     ctx.fillStyle = INK.white; ctx.font = `500 31px ${FONT.body}`; ctx.fillText(r.name, 400, y);
     ctx.fillStyle = INK.muted; ctx.font = `400 25px ${FONT.body}`; ctx.fillText(r.host, 1010, y);
-    ctx.textAlign = 'right'; ctx.fillStyle = gold ? INK.amber : INK.cyan; ctx.font = `600 28px ${FONT.mono}`;
+    ctx.textAlign = 'right'; ctx.fillStyle = metal; ctx.font = `600 28px ${FONT.mono}`;
     ctx.fillText(`${top < 10 ? top.toFixed(1) : Math.round(top)}%`, w - 60, y);
   });
   // `rows` gives each row's band in texture v coordinates (1 = top), so a click on the screen can be mapped to a row.
@@ -285,15 +289,20 @@ export function playBadge() {
   return toTexture(c);
 }
 
-// The neon name above the desk. Transparent canvas with a baked glow.
-export function neonSign(text) {
-  const w = 1600, h = 340;
+// The neon sign above the desk: a small line and a big line, with a baked glow on a transparent canvas.
+export function neonSign(small, big) {
+  const w = 1600, h = 440;
   const [c, ctx] = makeCanvas(w, h);
   ctx.clearRect(0, 0, w, h);
-  ctx.font = `700 150px ${FONT.display}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.shadowColor = INK.cyan; ctx.shadowBlur = 60; ctx.fillStyle = INK.cyan;
-  for (let i = 0; i < 3; i++) ctx.fillText(text, w / 2, h / 2 + 6);
-  ctx.shadowBlur = 0; ctx.fillStyle = '#eafeff'; ctx.fillText(text, w / 2, h / 2 + 6);
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  const glow = (text, size, y) => {
+    ctx.font = `700 ${size}px ${FONT.display}`;
+    ctx.shadowColor = INK.cyan; ctx.shadowBlur = size * 0.4; ctx.fillStyle = INK.cyan;
+    for (let i = 0; i < 3; i++) ctx.fillText(text, w / 2, y);
+    ctx.shadowBlur = 0; ctx.fillStyle = '#eafeff'; ctx.fillText(text, w / 2, y);
+  };
+  glow(small, 64, 92);
+  glow(big, 132, 280);
   return toTexture(c);
 }
 
@@ -368,12 +377,13 @@ export function certificate() {
   return toTexture(c);
 }
 
-export function medal(rank) {
+export function medal(rank, metal = 'gold') {
   const [c, ctx] = makeCanvas(256, 256);
   ctx.clearRect(0, 0, 256, 256);
-  ctx.fillStyle = '#ffc257'; ctx.beginPath(); ctx.arc(128, 128, 124, 0, Math.PI * 2); ctx.fill();
-  ctx.strokeStyle = '#b8862e'; ctx.lineWidth = 10; ctx.beginPath(); ctx.arc(128, 128, 102, 0, Math.PI * 2); ctx.stroke();
-  ctx.fillStyle = '#4a3208'; ctx.font = `700 ${rank > 99 ? 84 : 110}px ${FONT.display}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillStyle = METAL[metal]; ctx.beginPath(); ctx.arc(128, 128, 124, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = RIM[metal]; ctx.lineWidth = 10; ctx.beginPath(); ctx.arc(128, 128, 102, 0, Math.PI * 2); ctx.stroke();
+  ctx.fillStyle = metal === 'gold' ? '#4a3208' : metal === 'silver' ? '#2b3650' : '#3a2211';
+  ctx.font = `700 ${rank > 99 ? 84 : 110}px ${FONT.display}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   ctx.fillText(String(rank), 128, 134);
   return toTexture(c);
 }

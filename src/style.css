@@ -35,7 +35,7 @@ body.ready #scene { opacity: 1; }
 .bar nav button:hover, .bar nav a:hover { color: var(--ice); }
 .bar nav button.active { color: var(--cyan); border-bottom-color: var(--cyan); }
 
-.hint { position: fixed; left: 50%; bottom: 8.4rem; transform: translateX(-50%); z-index: 4; margin: 0; font: 500 .78rem var(--mono); color: var(--muted); background: rgba(4, 10, 22, .65); padding: .4rem .8rem; border: 1px solid var(--trace); white-space: nowrap; pointer-events: none; transition: opacity .6s; }
+.hint { position: fixed; left: var(--gutter); bottom: 1.2rem; transform: none; z-index: 4; margin: 0; font: 500 .78rem var(--mono); color: var(--muted); background: rgba(4, 10, 22, .65); padding: .4rem .8rem; border: 1px solid var(--trace); white-space: nowrap; pointer-events: none; transition: opacity .6s; }
 .hint.gone { opacity: 0; }
 
 /* Compass: a small ring with the needle, wall names sitting outside it */
@@ -51,7 +51,7 @@ body.ready #scene { opacity: 1; }
 .needle { position: absolute; left: 50%; top: 50%; width: 2px; height: 22px; margin: -22px 0 0 -1px; background: linear-gradient(var(--cyan), transparent); transform-origin: 50% 100%; transition: transform .08s linear; }
 .needle::after { content: ""; position: absolute; left: -3px; bottom: -4px; width: 8px; height: 8px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 10px var(--cyan); }
 
-.back { position: fixed; left: 50%; bottom: 8.4rem; transform: translateX(-50%); z-index: 4; font: 500 .85rem var(--body); color: var(--ice); background: rgba(4, 10, 22, .78); border: 1px solid var(--cyan); padding: .45rem .9rem; cursor: pointer; }
+.back { position: fixed; left: 50%; bottom: 10.2rem; transform: translateX(-50%); z-index: 4; font: 500 .85rem var(--body); color: var(--ice); background: rgba(4, 10, 22, .78); border: 1px solid var(--cyan); padding: .45rem .9rem; cursor: pointer; }
 
 .panel { position: fixed; top: 0; right: 0; bottom: 0; width: var(--panel-w); z-index: 3; background: var(--panel); border-left: 1px solid var(--trace); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); display: flex; flex-direction: column; transform: translateX(105%); transition: transform .55s cubic-bezier(.2, .8, .2, 1); }
 .panel.open { transform: none; }
@@ -118,6 +118,9 @@ body.ready #scene { opacity: 1; }
 .rank small { font: 400 .85rem var(--body); color: var(--muted); }
 .top { font-size: .76rem; padding: .1rem .45rem; border: 1px solid var(--trace); color: var(--cyan); font-variant-numeric: tabular-nums; }
 .top.gold { color: var(--amber); border-color: rgba(255, 194, 87, .5); }
+.top.silver { color: #d3dceb; border-color: rgba(211, 220, 235, .45); }
+.top.bronze { color: #d4915c; border-color: rgba(212, 145, 92, .5); }
+.embed video { width: 100%; height: 100%; display: block; object-fit: cover; }
 
 .tl { list-style: none; margin: 0; padding: 0; border-left: 1px solid var(--trace); }
 .tl li { padding: .3rem 0 .5rem .9rem; position: relative; }

@@ -88,17 +88,17 @@ export function buildRoom(scene, lowTier) {
 
   // The glow is baked into the texture; the material sits just above the bloom threshold so the letters stay legible.
   const NEON = 1.04;
-  const neonMat = new THREE.MeshBasicMaterial({ map: S.neonSign(profile.name), transparent: true, toneMapped: false, color: hdr(0xffffff, NEON), depthWrite: false });
-  add(new THREE.PlaneGeometry(4.4, 0.94), neonMat, 0, 3.12, 0.03, A);
-  const neonLight = point(0x4df3ff, 12, 7, 0, 3.0, 1.0, A);
+  const neonMat = new THREE.MeshBasicMaterial({ map: S.neonSign('welcome to', "Abdallah's trading desk"), transparent: true, toneMapped: false, color: hdr(0xffffff, NEON), depthWrite: false });
+  add(new THREE.PlaneGeometry(4.6, 1.265), neonMat, 0, 3.17, 0.03, A);
+  const neonLight = point(0x4df3ff, 12, 7, 0, 3.1, 1.0, A);
   perFrame.push(t => {
     const on = t > 1.5 ? 1 : (t < 0.4 ? 0 : (Math.sin(t * 43) > -0.3 ? 1 : 0.15) * Math.min(1, t / 1.5));
     const k = on * (1 + 0.03 * Math.sin(t * 31));
     neonMat.color.setScalar(NEON * k); neonLight.intensity = 12 * k;
   });
 
-  add(new THREE.BoxGeometry(2.1, 1.37, 0.04), M.metal, -2.45, 2.28, 0.02, A);
-  const wb = add(new THREE.PlaneGeometry(2.0, 1.27), new THREE.MeshStandardMaterial({ map: S.whiteboard(profile), roughness: 0.55 }), -2.45, 2.28, 0.045, A);
+  add(new THREE.BoxGeometry(2.1, 1.37, 0.04), M.metal, -2.7, 2.05, 0.02, A);
+  const wb = add(new THREE.PlaneGeometry(2.0, 1.27), new THREE.MeshStandardMaterial({ map: S.whiteboard(profile), roughness: 0.55 }), -2.7, 2.05, 0.045, A);
   interactives.push({ mesh: wb, kind: 'about', index: 3, dist: 1.6, wall: 'about' });
   add(new THREE.BoxGeometry(0.62, 0.74, 0.04), M.metal, 3.0, 2.2, 0.02, A);
   const cert = add(new THREE.PlaneGeometry(0.5, 0.6), new THREE.MeshStandardMaterial({ map: S.certificate(), roughness: 0.7 }), 3.0, 2.2, 0.045, A);
@@ -172,15 +172,19 @@ export function buildRoom(scene, lowTier) {
   const mark = add(new THREE.PlaneGeometry(4.5, 1), new THREE.MeshBasicMaterial({ color: 0x4df3ff, transparent: true, opacity: 0.16, depthWrite: false, toneMapped: false }), 0, 0, 0.003, board.mesh);
   mark.visible = false;
   board.mark = mark;
-  competitions.ranked.slice(0, 3).forEach((r, i) => {
-    const x = (i - 1) * 0.8;
+  // Gold, silver, bronze: the three medals named in `competitions.podium`.
+  const metals = ['gold', 'silver', 'bronze'], rims = { gold: 0xb8862e, silver: 0x7f8ca3, bronze: 0x7d4f2b };
+  competitions.podium.forEach((slug, i) => {
+    const idx = competitions.ranked.findIndex(r => r.slug === slug);
+    if (idx < 0) return;
+    const r = competitions.ranked[idx], metal = metals[i], x = (i - 1) * 0.8;
     add(new THREE.BoxGeometry(0.07, 0.34, 0.012), new THREE.MeshStandardMaterial({ color: 0x2a5bd7, roughness: 0.7 }), x, 0.72, 0.04, C);
     // Unlit materials: under the cyan wall light a lit amber turns green.
-    add(new THREE.CylinderGeometry(0.15, 0.15, 0.025, 32), new THREE.MeshBasicMaterial({ color: 0xb8862e }), x, 0.5, 0.05, C).rotation.x = Math.PI / 2;
-    const face = add(new THREE.CircleGeometry(0.15, 32), new THREE.MeshBasicMaterial({ map: S.medal(r.rank), transparent: true }), x, 0.5, 0.065, C);
-    interactives.push({ mesh: face, kind: 'competition', index: i, dist: 1.7, wall: 'competitions' });
+    add(new THREE.CylinderGeometry(0.15, 0.15, 0.025, 32), new THREE.MeshBasicMaterial({ color: rims[metal] }), x, 0.5, 0.05, C).rotation.x = Math.PI / 2;
+    const face = add(new THREE.CircleGeometry(0.15, 32), new THREE.MeshBasicMaterial({ map: S.medal(r.rank, metal), transparent: true }), x, 0.5, 0.065, C);
+    interactives.push({ mesh: face, kind: 'competition', index: idx, dist: 1.7, wall: 'competitions' });
   });
-  add(new THREE.PlaneGeometry(1.4, 0.2), new THREE.MeshBasicMaterial({ map: S.label('top 1 percent'), transparent: true, toneMapped: false, color: hdr(0xffffff, 1.2) }), 0, 0.22, 0.04, C);
+  add(new THREE.PlaneGeometry(1.4, 0.2), new THREE.MeshBasicMaterial({ map: S.label('podium'), transparent: true, toneMapped: false, color: hdr(0xffffff, 1.2) }), 0, 0.22, 0.04, C);
   point(0x4df3ff, 12, 8, 0, 2.4, 1.8, C);
 
   // ---------- Experiences wall: three hanging badges ----------
