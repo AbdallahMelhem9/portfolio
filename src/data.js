@@ -9,8 +9,9 @@ export const profile = {
     "I started with two bachelor's degrees at once at the Lebanese University: telecommunication engineering in the top 1%, alongside computer science. Then Paris: general engineering at Mines Paris with a geostatistics and applied probability specialty, a statistics and learning master at Sorbonne, and now MASEF at Paris Dauphine, where the courses are stochastic calculus, market microstructure, order book models and high-frequency trading.",
     'I ran the IEEE student branch for a year and taught a twelve-session full-stack bootcamp.',
   ],
-  email: 'abdallah.melhem@etu.minesparis.psl.eu',
+  emails: ['abdallah.melhem@dauphine.eu', 'abdallah.melhem@etu.minesparis.psl.eu'],
   github: 'https://github.com/AbdallahMelhem9',
+  kaggle: 'https://www.kaggle.com/kenjimelhem',
   youtube: 'https://youtube.com/playlist?list=PLMl0tmOKM5rEBnAIkkfkDQyqiA67SwBQB',
   languages: [['English', 'C2'], ['Arabic', 'C2'], ['French', 'B2']],
   // Newest first. `short` is what the whiteboard writes.
@@ -56,12 +57,12 @@ export const experiences = [
   },
 ];
 
-// `details` opens when a monitor is clicked. `live` is a deployed site, `video` a YouTube id of a preview; both optional.
+// `details` opens when a monitor is clicked. `live` is the deployed site, `video` the YouTube id of a demo; both optional.
 export const projects = [
   { slug: 'ai-applier', year: 2026, title: 'AI Applier', stackShort: 'Python, Angular', stack: 'Python, FastAPI, Angular, Playwright, Claude',
     blurb: 'Sweeps hedge fund and bank job feeds every morning, scores each posting against a CV, drafts a cover letter with a two-agent pipeline, and fills the form. It stops before Submit.',
     details: 'Every morning it fetches openings from the career pages of the firms I follow, detects the applicant tracking system behind each one, and filters the roles. A first agent drafts a cover letter from my CV and a prototype letter; a second agent critiques it. Playwright then fills the application form and stops on the last page, so the final click is always mine.',
-    url: null, live: null, video: null },
+    url: null, live: 'https://ai-applier.onrender.com', video: null },
   { slug: 'semantic-market-prediction', year: 2026, title: 'Semantic Market Prediction', stackShort: 'Python, XGBoost', stack: 'Python, XGBoost, GPT and Claude ensemble, NewsAPI, Finnhub',
     blurb: 'Scores recession fear in financial news with an LLM ensemble, tracks it against the S&P 500 and Euro Stoxx 50, and predicts next-day direction. Built for the BNP Paribas equity and derivatives strategy team.',
     details: 'News comes from three sources and is cleaned before any model sees it. Two language models read each day\'s articles and give one fear score for the day, weighing a single major event above many routine ones; averaging the two models reduces model-specific bias. An XGBoost model trained on two years of VIX and index data turns the fear series into a next-day direction, shown side by side with a written forecast from the language model. Each day only ever sees data from previous days, so the backtest is honest.',
@@ -69,7 +70,7 @@ export const projects = [
   { slug: 'masef-helper', year: 2026, title: 'MASEF Helper', stackShort: 'Angular, Node', stack: 'Angular 20, Node, Express, SQLite, Claude Agent SDK',
     blurb: 'A study app that turns course PDFs into readable LaTeX sections, each with an AI lecture and its own chat. A PDF you can talk to.',
     details: 'Courses hold lessons, lessons hold the teacher\'s PDFs. Uploading a PDF outlines it into sections, transcribes each section faithfully to Markdown and LaTeX, and writes a short lecture under it. Every section has its own chat box, and there is a glossary and several reading modes. Built for my own MASEF year at Dauphine.',
-    url: 'https://github.com/AbdallahMelhem9/masef-helper', live: null, video: null },
+    url: 'https://github.com/AbdallahMelhem9/masef-helper', live: 'https://masef-helper.onrender.com', video: null },
   { slug: 'deep-learning-papers', year: 2025, title: 'Deep learning papers, rebuilt', stackShort: 'PyTorch', stack: 'PyTorch, Jupyter, YouTube',
     blurb: 'PyTorch re-implementations of DDPM, U-Net, VAE and a mini GPT, as runnable notebooks with accompanying videos.',
     details: 'Each paper gets a notebook that rebuilds the model from scratch and a video that walks through the paper and the code, including the maths. The videos sit on the rack below the monitors.',
@@ -100,20 +101,28 @@ export const videos = [
   { id: 'TgTQE_muXec', date: '2026-08', title: 'Coding a diffusion model from scratch in PyTorch' },
 ];
 
+// Ranked results, best percentile first. Ranks come from the Kaggle profile (kaggle.com/kenjimelhem) where the
+// competition is on Kaggle, otherwise from the organizer's leaderboard. The 3D screen shows the first `onScreen`;
+// the panel lists them all. `short` is what the results tape on the desk scrolls. `what` and `approach` open on click.
+// `url` is the code; `page` is the competition page.
 export const competitions = {
-  // `short` is what the results tape on the desk scrolls. `what` and `approach` open when a row or medal is clicked.
-  // `url` is the code; `page` is the competition page.
+  onScreen: 8,
   ranked: [
+    { slug: 'student-test-scores', name: 'Predicting student test scores', host: 'Kaggle Playground Series', rank: 17, of: 4317, short: 'KAGGLE PS',
+      note: 'Predict students\' exam scores from their study habits and background.',
+      what: 'Kaggle Playground Series, season 6 episode 1: predict students\' exam scores from study habits, attendance and background features on a synthetic dataset, scored by root mean squared error.',
+      approach: 'An ensemble of 102 XGBoost models, gated by a categorical model that decides which members to trust for each row. 17th of 4,317 on the final leaderboard.',
+      page: 'https://www.kaggle.com/competitions/playground-series-s6e1', url: null, codeNote: 'Built in Kaggle notebooks; not on GitHub yet.' },
     { slug: 'qube-rt-asset-allocation', name: 'Asset allocation performance forecasting', host: 'Qube RT', rank: 7, of: 1280, short: 'QUBE RT',
       note: 'Predict whether a portfolio allocation goes up or down tomorrow, from twenty days of returns and volumes.',
       what: 'A Qube Research & Technologies challenge on the ENS Challenge Data platform. Each row is one allocation on an anonymized date, with twenty days of returns and signed volume, a median daily turnover and a group label. The target is the sign of the next-day return; the metric is accuracy.',
       approach: 'LightGBM, depth 3, on hand-crafted features: average performance over several windows with per-date means and volatility, RSI, momentum ratio and streaks, skewness and kurtosis, drawdown, z-score, rank and group mean within the date, volume-weighted returns and turnover interactions. Validation with eight folds over dates rather than rows, so a fold never sees the other allocations of its own date. The lesson was the gap between validation and leaderboard: features built from one row or one date generalized, features that used an allocation\'s own history across dates raised validation but not the leaderboard, so they were dropped.',
       page: 'https://challengedata.ens.fr/participants/challenges/167/', url: null, codeNote: 'The challenge is still running, so the code stays private until it closes.' },
-    { slug: 'student-test-scores', name: 'Predicting student test scores', host: 'Kaggle Playground Series', rank: 15, of: 4319, short: 'KAGGLE PS',
-      note: 'Predict students\' exam scores from their study habits and background.',
-      what: 'Kaggle Playground Series, season 6 episode 1: predict students\' exam scores from study habits, attendance and background features on a synthetic dataset, scored by root mean squared error.',
-      approach: 'An ensemble of 102 XGBoost models, gated by a categorical model that decides which members to trust for each row. Ranked 15th of 4,319 on the private leaderboard.',
-      page: 'https://www.kaggle.com/competitions/playground-series-s6e1/leaderboard', url: null, codeNote: 'Built in Kaggle notebooks; not on GitHub yet.' },
+    { slug: 'stellar-class', name: 'Predicting stellar class', host: 'Kaggle Playground Series', rank: 23, of: 2816, short: 'KAGGLE S6E6',
+      note: 'Tell galaxies, quasars and stars apart from telescope measurements.',
+      what: 'Kaggle Playground Series, season 6 episode 6: classify sky objects as galaxy, quasar or star from photometric measurements, on synthetic data modeled on the Sloan Digital Sky Survey, scored by balanced accuracy.',
+      approach: 'A blend of gradient-boosted models (XGBoost, CatBoost, LightGBM) and a small neural network over the raw magnitudes, their colour differences and redshift, with out-of-fold blending and a check that every gain in cross-validation also moved the leaderboard. Balanced accuracy 0.971; 23rd of 2,816.',
+      page: 'https://www.kaggle.com/competitions/playground-series-s6e6', url: null },
     { slug: 'imc-prosperity-4', name: 'IMC Prosperity 4', host: 'IMC Trading', rank: 153, of: 18803, short: 'IMC P4',
       note: 'Write a trading bot for a simulated exchange. 4th of 145 in France.',
       what: 'IMC Trading\'s global algorithmic trading competition. Over five rounds, teams submit a Python Trader class that receives the order book of a simulated exchange at each tick and returns orders under position limits, with manual trading rounds alongside. Over 18,000 teams took part.',
@@ -129,25 +138,41 @@ export const competitions = {
       what: 'A timed brainteaser contest run by Murex with CMF: probability, combinatorics, mental arithmetic and market-style reasoning, the kind of questions asked in quant interviews.',
       approach: 'No code, just paper and speed. 5th of 150.',
       page: null, url: null, codeNote: 'Pen-and-paper contest, so there is no code.' },
+    { slug: 'handwritten-to-data', name: 'Handwritten to data', host: 'Kaggle', rank: 16, of: 198, short: 'HANDWRITING',
+      note: 'Read Ukrainian handwritten documents and turn them into text.',
+      what: 'A Kaggle community competition on recognizing Ukrainian handwritten documents: transcribe scanned handwriting, including formulas and tables, into text, scored by how close the transcription is to the ground truth.',
+      approach: 'Detect the text regions first, then transcribe each one with transformer OCR models fine-tuned on the competition\'s handwriting (TrOCR, with QLoRA adapters on larger vision-language models), and correct the Ukrainian text afterwards with a language model. 16th of 198.',
+      page: 'https://www.kaggle.com/competitions/handwritten-to-data', url: null },
     { slug: 'supertuxkart-rl', name: 'SuperTuxKart reinforcement learning', host: 'Sorbonne University', rank: 2, of: 21, short: 'STK RL',
       note: 'Teach an agent to race a kart, by trial and error. 2nd of 21 in the class.',
       what: 'A Sorbonne University reinforcement learning project with a class leaderboard: train an agent to race in SuperTuxKart through PySTK2 and Gymnasium, using the BBRL library.',
       approach: 'Parallel environments for throughput. A custom DQN that collapses the 1,120-action space into 56 composite actions, and a hybrid SAC with a shared MLP encoder for joint continuous and discrete control. Best reward 432.2, 2nd of 21.',
       page: null, url: null, codeNote: 'Course project; the code is not published.' },
+    { slug: 'stanford-rna', name: 'Stanford RNA 3D folding, part 2', host: 'Kaggle', rank: 296, of: 1867, short: 'RNA 3D',
+      note: 'Predict the three-dimensional shape of an RNA molecule from its sequence.',
+      what: 'A featured Kaggle research competition from Stanford: predict the 3D coordinates of RNA molecules from their sequences, one of the open problems of structural biology, scored by how well predicted structures align with the real ones.',
+      approach: 'Experiments on top of the public structure-prediction pipelines, tuning how candidate structures are generated and selected. 296th of 1,867.',
+      page: 'https://www.kaggle.com/competitions/stanford-rna-3d-folding-2', url: null },
+    { slug: 'orbit-wars', name: 'Orbit Wars', host: 'Kaggle', rank: 846, of: 4729, short: 'ORBIT WARS',
+      note: 'Write a bot that conquers planets orbiting a sun, playing live against other bots.',
+      what: 'A Kaggle simulation competition reviving the 2010 Planet Wars challenge: planets orbit a sun in continuous 2D space, and each team\'s bot sends fleets between them in real-time games of two or four players, climbing a ladder over two months.',
+      approach: 'Rule-based agents tuned in a local arena with side-swapped seeds and confidence intervals on win rates, plus a value network trained on episode logs; only changes that beat the previous bot with enough games were submitted. 846th of 4,729.',
+      page: 'https://www.kaggle.com/competitions/orbit-wars', url: null },
+    { slug: 'student-health-risk', name: 'Predicting student health risk', host: 'Kaggle Playground Series', rank: 604, of: 3355, short: 'KAGGLE S6E7',
+      note: 'Classify students\' health risk from lifestyle and vital-sign features.',
+      what: 'Kaggle Playground Series, season 6 episode 7: predict a student\'s health risk class from features such as body mass index, heart rate and step count, on synthetic data, scored by balanced accuracy.',
+      approach: 'XGBoost, CatBoost and LightGBM with feature-engineering loops and out-of-fold blending; balanced accuracy about 0.95 in cross-validation. 604th of 3,355.',
+      page: 'https://www.kaggle.com/competitions/playground-series-s6e7', url: null },
   ],
-  // Ranks not recorded yet. Add `rank` and `of` and move an entry up to `ranked`.
+  // Entered without a top result, or still running.
   entered: [
-    { name: 'Biohub cell tracking during development', host: 'Kaggle', note: 'Cell lineage tracking in microscopy, 2026' },
-    { name: 'Handwritten to data', host: 'Kaggle', note: 'Ukrainian handwriting recognition with TrOCR and QLoRA' },
-    { name: 'Liquidity Arena 2026', host: 'Kaggle', note: 'AI quant trading competition' },
-    { name: 'March Machine Learning Mania 2026', host: 'Kaggle', note: 'Calibrated XGBoost and rating models, Brier score' },
-    { name: 'NeuroGolf', host: 'Kaggle', note: 'Smallest neural networks that solve ARC-AGI transformations' },
-    { name: 'Orbit Wars', host: 'Kaggle', note: 'Planet Wars style bot ladder, value net and rule-based agents' },
-    { name: 'Predicting stellar class', host: 'Kaggle', note: 'Playground S6E6, balanced accuracy 0.971 on the leaderboard' },
-    { name: 'ROGII wellbore geology prediction', host: 'Kaggle', note: 'Physics-informed ridge and gradient boosting' },
-    { name: 'Soccer feature engineering hackathon', host: 'SkillCorner', note: '25 team-level features from SkillCorner dynamic events' },
-    { name: 'Stanford RNA 3D folding', host: 'Kaggle', note: '3D structure prediction' },
-    { name: 'Leukemia risk prediction', host: 'Qube RT', note: 'Survival analysis, Cox models with molecular features, 2025' },
+    { name: 'Biohub cell tracking during development', host: 'Kaggle', note: 'Cell lineage tracking in microscopy. Still running.' },
+    { name: 'The 2026 NeuroGolf championship', host: 'Kaggle', note: 'Smallest neural networks that solve ARC-AGI transformations. Finished 1,313th of 2,963.' },
+    { name: 'ROGII wellbore geology prediction', host: 'Kaggle', note: 'Physics-informed ridge and gradient boosting. Finished 3,889th of 6,125.' },
+    { name: 'Liquidity Arena 2026', host: 'Kaggle', note: 'AI quant trading competition.' },
+    { name: 'March Machine Learning Mania 2026', host: 'Kaggle', note: 'Calibrated XGBoost and rating models, Brier score.' },
+    { name: 'Soccer feature engineering hackathon', host: 'SkillCorner', note: '25 team-level features from SkillCorner dynamic events.' },
+    { name: 'Leukemia risk prediction', host: 'Qube RT', note: 'Survival analysis, Cox models with molecular features, 2025.' },
   ],
 };
 

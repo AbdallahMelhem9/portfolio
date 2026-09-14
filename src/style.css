@@ -62,6 +62,8 @@ body.ready #scene { opacity: 1; }
 .p-body { flex: 1 1 auto; min-height: 0; overflow: auto; padding: 1rem var(--gutter) 2rem; scrollbar-width: thin; scrollbar-color: var(--trace) transparent; }
 .p-body p { color: var(--muted); margin: 0 0 .9rem; max-width: 60ch; }
 .p-body .lede { color: var(--ice); font-size: 1.02rem; }
+.welcome { font: 600 1.15rem var(--display); color: var(--cyan); margin: 0 0 .6rem; letter-spacing: .01em; text-shadow: 0 0 14px rgba(77, 243, 255, .35); }
+.row-links { display: flex; align-items: center; gap: 1rem; margin: 0; }
 .p-body h3 { font: 600 1.05rem var(--display); margin: 1.3rem 0 .5rem; color: var(--ice); }
 .p-body a { color: var(--cyan); text-decoration: none; }
 .p-body a:hover { text-decoration: underline; }

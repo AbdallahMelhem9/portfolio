@@ -10,6 +10,7 @@ const pct = (r, of) => { const t = topPercent(r, of); return `${t < 10 ? t.toFix
 
 function aboutHTML() {
   return `
+    <p class="welcome">Welcome to Abdallah's trading desk.</p>
     <p class="lede">${esc(profile.tagline)}. ${esc(profile.intro)}</p>
     ${profile.bio.map(p => `<p>${esc(p)}</p>`).join('')}
     <h3>Education</h3>
@@ -17,7 +18,7 @@ function aboutHTML() {
     <h3>Languages</h3>
     <ul class="langs">${profile.languages.map(([l, v]) => `<li><b>${esc(l)}</b> ${esc(v)}</li>`).join('')}</ul>
     <h3>Contact</h3>
-    <p><a href="mailto:${esc(profile.email)}">${esc(profile.email)}</a><br>${link(profile.github, profile.github.replace('https://', ''))}<br>${link(profile.youtube, 'YouTube playlist')}</p>`;
+    <p>${profile.emails.map(e => `<a href="mailto:${esc(e)}">${esc(e)}</a>`).join('<br>')}<br>${link(profile.github, profile.github.replace('https://', ''))}<br>${link(profile.kaggle, profile.kaggle.replace('https://www.', ''))}<br>${link(profile.youtube, 'YouTube playlist')}</p>`;
 }
 function expHTML() {
   return `<p class="lede">Three internships. Click a badge on the wall to scan it, or open the details here.</p>` +
@@ -35,7 +36,7 @@ function projHTML() {
       <h3>${esc(p.title)}</h3>
       <p>${esc(p.blurb)}</p>
       <p class="skills">${esc(p.stack)}</p>
-      <button class="more" type="button" data-detail="project:${i}">Details</button>
+      <p class="row-links"><button class="more" type="button" data-detail="project:${i}">Details${p.video ? ' and demo' : ''}</button>${p.live ? link(p.live, 'Open the site') : ''}</p>
     </article>`).join('');
   const vids = videos.map((v, i) => `
     <article class="item" data-item="video:${i}" tabindex="0">
@@ -58,7 +59,7 @@ function compHTML() {
       <button class="more" type="button" data-detail="competition:${i}">Details${r.url ? ' and code' : ''}</button>
     </article>`).join('');
   const entered = competitions.entered.map(e => `<li>${esc(e.name)}<span>${esc(e.host)}. ${esc(e.note)}</span></li>`).join('');
-  return `<p class="lede">Ranked results first. Click a row on the leaderboard screen, or open the details here.</p>${ranked}
+  return `<p class="lede">Best results first, ranks as shown on ${link(profile.kaggle, 'my Kaggle profile')} or the organizer's leaderboard. Click a row on the screen, or open the details here.</p>${ranked}
     <h3>Also entered</h3><ul class="entered">${entered}</ul>`;
 }
 
@@ -78,13 +79,14 @@ function detail(kind, i) {
   if (kind === 'project') {
     const p = projects[i];
     const links = [];
-    if (p.live) links.push(link(p.live, 'Live site'));
+    if (p.live) links.push(link(p.live, 'Open the site'));
     if (p.url) links.push(link(p.url, 'Repository on GitHub'));
     if (p.playlist) links.push(link(profile.youtube, 'Videos on YouTube'));
     if (!p.url && !p.live) links.push('<span class="muted">Private repository</span>');
-    const preview = p.video ? `<div class="embed"><iframe src="https://www.youtube-nocookie.com/embed/${esc(p.video)}" title="Preview" allow="encrypted-media; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>` : '';
+    // `video` is a YouTube id of a demo; the section only appears once one exists.
+    const demo = p.video ? `<h4>Demo</h4><div class="embed"><iframe src="https://www.youtube-nocookie.com/embed/${esc(p.video)}" title="Demo of ${esc(p.title)}" allow="encrypted-media; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>` : '';
     return { back: 'projects', eyebrow: p.year ? `Project, ${p.year}` : 'Project', title: p.title, meta: p.stack,
-      body: `${preview}<p>${esc(p.blurb)}</p><h4>How it works</h4><p>${esc(p.details)}</p><h4>Links</h4><p class="d-links">${links.join('<br>')}</p>` };
+      body: `<p>${esc(p.blurb)}</p>${demo}<h4>How it works</h4><p>${esc(p.details)}</p><h4>Links</h4><p class="d-links">${links.join('<br>')}</p>` };
   }
   if (kind === 'video') {
     const v = videos[i];

@@ -132,7 +132,7 @@ export function buildRoom(scene, lowTier) {
   const slots = [[-2.25, 2.62], [-0.75, 2.62], [0.75, 2.62], [2.25, 2.62], [-1.5, 1.72], [0, 1.72], [1.5, 1.72]];
   projects.forEach((p, i) => {
     const [x, y] = slots[i % slots.length];
-    screen(P, { w: 1.38, h: 0.83, x, y, z: 0.03, tex: S.projectScreen(p), kind: 'project', index: i, dist: 1.4, wall: 'projects' });
+    screen(P, { w: 1.38, h: 0.83, x, y, z: 0.03, tex: S.projectScreen(p), kind: 'project', index: i, dist: 1.9, wall: 'projects' });
   });
   // The video rack: two rows of YouTube thumbnails floating below the monitors, tilted up toward the viewer.
   const vidGeo = new THREE.PlaneGeometry(1.0, 0.5625);
@@ -165,7 +165,7 @@ export function buildRoom(scene, lowTier) {
 
   // ---------- Competitions wall: the leaderboard ----------
   const C = walls.competitions;
-  const lb = S.leaderboard(competitions.ranked, competitions.entered.length);
+  const lb = S.leaderboard(competitions.ranked.slice(0, competitions.onScreen), competitions.ranked.length);
   screen(C, { w: 4.6, h: 2.4, x: 0, y: 2.15, z: 0.03, tex: lb.texture, kind: 'leaderboard', index: -1, rows: lb.rows, dist: 5.2, wall: 'competitions', glow: 1.15 });
   // A translucent bar that marks the selected row on the screen itself.
   const board = interactives[interactives.length - 1];

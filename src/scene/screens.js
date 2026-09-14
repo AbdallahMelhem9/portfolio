@@ -180,10 +180,10 @@ export function orderBook() {
 }
 
 // The big wall screen on the competitions side.
-export function leaderboard(ranked, enteredCount) {
+export function leaderboard(ranked, total) {
   const w = 1536, h = 800;
   const [c, ctx] = makeCanvas(w, h);
-  const bh = frame(ctx, w, h, 'leaderboard', `${ranked.length} ranked, ${enteredCount} more entered. Click a row to open it`);
+  const bh = frame(ctx, w, h, 'leaderboard', `${ranked.length} of ${total} results. Click a row to open it`);
   ctx.textBaseline = 'middle';
   const yHead = bh + 34;
   ctx.fillStyle = INK.dim; ctx.font = `500 24px ${FONT.mono}`; ctx.textAlign = 'left';
