@@ -89,7 +89,7 @@ export function buildRoom(scene, lowTier) {
   // The glow is baked into the texture; the material sits just above the bloom threshold so the letters stay legible.
   const NEON = 1.04;
   const neonMat = new THREE.MeshBasicMaterial({ map: S.neonSign('welcome to', "Abdallah's trading desk"), transparent: true, toneMapped: false, color: hdr(0xffffff, NEON), depthWrite: false });
-  add(new THREE.PlaneGeometry(4.6, 1.265), neonMat, 0, 3.17, 0.03, A);
+  add(new THREE.PlaneGeometry(3.6, 0.99), neonMat, 0, 3.12, 0.03, A);
   const neonLight = point(0x4df3ff, 12, 7, 0, 3.1, 1.0, A);
   perFrame.push(t => {
     const on = t > 1.5 ? 1 : (t < 0.4 ? 0 : (Math.sin(t * 43) > -0.3 ? 1 : 0.15) * Math.min(1, t / 1.5));

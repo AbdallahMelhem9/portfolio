@@ -86,7 +86,11 @@ function detail(kind, i) {
     // `video` a YouTube id. The section only appears once one exists, with the links right under it.
     let demo = '';
     if (p.demo) demo = `<div class="embed"><video src="${esc(import.meta.env.BASE_URL + p.demo)}" autoplay muted loop playsinline preload="metadata" aria-label="Demo of ${esc(p.title)}"></video></div>`;
-    else if (p.shots && p.shots.length) demo = `<div class="embed slides" aria-label="Screens of ${esc(p.title)}">${p.shots.map((s, k) => `<img src="${esc(import.meta.env.BASE_URL + s)}" alt="" class="${k === 0 ? 'on' : ''}" loading="${k === 0 ? 'eager' : 'lazy'}">`).join('')}<span class="dots">${p.shots.map((s, k) => `<i class="${k === 0 ? 'on' : ''}"></i>`).join('')}</span></div>`;
+    else if (p.shots && p.shots.length) {
+      // Each shot is a path or { src, caption }; captions read like a guided tour.
+      const shots = p.shots.map(s => (typeof s === 'string' ? { src: s, caption: '' } : s));
+      demo = `<div class="embed slides" aria-label="Screens of ${esc(p.title)}">${shots.map((s, k) => `<img src="${esc(import.meta.env.BASE_URL + s.src)}" alt="" class="${k === 0 ? 'on' : ''}" loading="${k === 0 ? 'eager' : 'lazy'}">`).join('')}${shots.map((s, k) => `<span class="cap${k === 0 ? ' on' : ''}">${esc(s.caption)}</span>`).join('')}<span class="dots">${shots.map((s, k) => `<i class="${k === 0 ? 'on' : ''}"></i>`).join('')}</span></div>`;
+    }
     else if (p.video) demo = `<div class="embed"><iframe src="https://www.youtube-nocookie.com/embed/${esc(p.video)}?autoplay=1&mute=1&loop=1&playlist=${esc(p.video)}&controls=0&rel=0" title="Demo of ${esc(p.title)}" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>`;
     if (demo) demo = `<h4>Demo</h4><div class="demo">${demo}<button class="enlarge" type="button" data-enlarge>Click to enlarge</button></div>`;
     return { back: 'projects', eyebrow: p.year ? `Project, ${p.year}` : 'Project', title: p.title, meta: p.stack,
@@ -165,7 +169,7 @@ export function buildUI(root) {
   // Screenshot slideshows advance on a timer while a detail (or the enlarged view) is open.
   const SLIDE_MS = 2200;
   function runSlides(box) {
-    const imgs = [...box.querySelectorAll('img')], dots = [...box.querySelectorAll('.dots i')];
+    const imgs = [...box.querySelectorAll('img')], dots = [...box.querySelectorAll('.dots i')], caps = [...box.querySelectorAll('.cap')];
     if (!imgs.length) return null;
     // The box takes the shape of the screenshots, so nothing gets cropped.
     const fit = () => { if (imgs[0].naturalWidth) box.style.aspectRatio = `${imgs[0].naturalWidth} / ${imgs[0].naturalHeight}`; };
@@ -176,6 +180,7 @@ export function buildUI(root) {
       k = (k + 1) % imgs.length;
       imgs.forEach((im, i) => im.classList.toggle('on', i === k));
       dots.forEach((d, i) => d.classList.toggle('on', i === k));
+      caps.forEach((c, i) => c.classList.toggle('on', i === k));
     }, SLIDE_MS);
   }
   let slideTimer = null, lbTimer = null;
