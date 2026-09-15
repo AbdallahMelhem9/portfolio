@@ -59,10 +59,15 @@ export const experiences = [
 
 // `details` opens when a monitor is clicked. `live` is the deployed site, `video` the YouTube id of a demo; both optional.
 export const projects = [
-  { slug: 'ai-apply', year: 2026, title: 'AI Apply', stackShort: 'Python, Angular', stack: 'Python, FastAPI, Angular, Playwright, Claude',
+  { slug: 'ai-apply-finance', year: 2026, title: 'AI Apply Finance', stackShort: 'Python, Angular', stack: 'Python, FastAPI, Angular, Playwright, Claude',
     blurb: 'Sweeps hedge fund and bank job feeds every morning, scores each posting against your CV, drafts a cover letter with a two-agent pipeline, and fills the form. It stops before Submit.',
     details: 'Every morning it fetches openings from the career pages of the firms you follow, detects the applicant tracking system behind each one, and filters the roles. A first agent drafts a cover letter from your CV and a prototype letter; a second agent critiques it. Playwright then fills the application form and stops on the last page, so the final click is always yours. Friends use it too: each user has their own space and login.',
-    url: null, live: 'https://ai-applier.onrender.com', video: null },
+    url: null, live: 'https://ai-apply-finance.onrender.com', video: null,
+    shots: [
+      { src: 'demos/ai-apply-finance/1.jpg', caption: "Every morning: the openings at hedge funds and banks, scored against my CV." },
+      { src: 'demos/ai-apply-finance/2.jpg', caption: "Each offer gets a fit score, the reason it fits, and a letter of its own." },
+      { src: 'demos/ai-apply-finance/3.jpg', caption: "The letter: agents write the paragraph about the fund and the fit line, then it is rendered as a PDF, in English or French." },
+    ] },
   { slug: 'semantic-market-prediction', year: 2026, title: 'Semantic Market Prediction', stackShort: 'Python, XGBoost', stack: 'Python, XGBoost, GPT and Claude ensemble, NewsAPI, Finnhub',
     blurb: 'Scores recession fear in financial news with an LLM ensemble, tracks it against the S&P 500 and Euro Stoxx 50, and predicts next-day direction. Built for the BNP Paribas equity and derivatives strategy team.',
     details: 'News comes from three sources and is cleaned before any model sees it. Two language models read each day\'s articles and give one fear score for the day, weighing a single major event above many routine ones; averaging the two models reduces model-specific bias. An XGBoost model trained on two years of VIX and index data turns the fear series into a next-day direction, shown side by side with a written forecast from the language model. Each day only ever sees data from previous days, so the backtest is honest.',
@@ -80,9 +85,11 @@ export const projects = [
     details: 'Courses hold lessons, lessons hold the teacher\'s PDFs. Uploading a PDF outlines it into sections, transcribes each section faithfully to Markdown and LaTeX, and writes a short lecture under it. Every section has its own chat box, and there is a glossary and several reading modes. Built for my own MASEF year at Dauphine.',
     url: 'https://github.com/AbdallahMelhem9/masef-helper', live: 'https://masef-helper.onrender.com', video: null,
     shots: [
-      { src: 'demos/masef-helper/1.jpg', caption: "Courses, lessons, and the teacher's PDFs behind them." },
-      { src: 'demos/masef-helper/2.jpg', caption: "A course: one lesson per chapter, each with its PDF." },
-      { src: 'demos/masef-helper/3.jpg', caption: "A PDF you can read with explanations, notes and your own questions." },
+      { src: 'demos/masef-helper/1.jpg', caption: "The lesson as the teacher wrote it: the PDF transcribed with its formulas, every AI layer switched off." },
+      { src: 'demos/masef-helper/2.jpg', caption: "Toggle Explanations: a plain-words explanation appears under each definition and proposition." },
+      { src: 'demos/masef-helper/3.jpg', caption: "Every section has its own chat: ask the AI about that exact example." },
+      { src: 'demos/masef-helper/4.jpg', caption: "Shortcut: in a hurry? Only the yellow blocks are the essentials of the lesson." },
+      { src: 'demos/masef-helper/5.jpg', caption: "Tutor's notes and deep dives turn the PDF into a lecture." },
     ] },
   { slug: 'deep-learning-papers', year: 2025, title: 'Deep learning papers, rebuilt', stackShort: 'PyTorch', stack: 'PyTorch, Jupyter, YouTube',
     blurb: 'PyTorch re-implementations of DDPM, U-Net, VAE and a mini GPT, as runnable notebooks with accompanying videos.',
