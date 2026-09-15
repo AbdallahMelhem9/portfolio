@@ -57,7 +57,7 @@ function compHTML() {
       <p>${esc(r.note)}</p>
       <button class="more" type="button" data-detail="competition:${i}">Details${r.url ? ' and code' : ''}</button>
     </article>`).join('');
-  const entered = competitions.entered.map(e => `<li>${esc(e.name)}<span>${esc(e.host)}. ${esc(e.note)}</span></li>`).join('');
+  const entered = competitions.entered.map(e => `<li>${esc(e.name)}<span>${esc(e.host)}. ${esc(e.note)}${e.url ? ' ' + link(e.url, 'Code') : ''}</span></li>`).join('');
   return `<p class="lede">Best results first, ranks as shown on ${link(profile.kaggle, 'my Kaggle profile')} or the organizer's leaderboard. Click a row on the screen, or open the details here.</p>${ranked}
     <h3>Also entered</h3><ul class="entered">${entered}</ul>`;
 }
@@ -85,8 +85,10 @@ function detail(kind, i) {
     // A demo loops silently: `demo` is a video file under public/ (for example 'demos/masef-helper.mp4'),
     // `video` a YouTube id. The section only appears once one exists, with the links right under it.
     let demo = '';
-    if (p.demo) demo = `<h4>Demo</h4><div class="embed"><video src="${esc(import.meta.env.BASE_URL + p.demo)}" autoplay muted loop playsinline preload="metadata" aria-label="Demo of ${esc(p.title)}"></video></div>`;
-    else if (p.video) demo = `<h4>Demo</h4><div class="embed"><iframe src="https://www.youtube-nocookie.com/embed/${esc(p.video)}?autoplay=1&mute=1&loop=1&playlist=${esc(p.video)}&controls=0&rel=0" title="Demo of ${esc(p.title)}" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>`;
+    if (p.demo) demo = `<div class="embed"><video src="${esc(import.meta.env.BASE_URL + p.demo)}" autoplay muted loop playsinline preload="metadata" aria-label="Demo of ${esc(p.title)}"></video></div>`;
+    else if (p.shots && p.shots.length) demo = `<div class="embed slides" aria-label="Screens of ${esc(p.title)}">${p.shots.map((s, k) => `<img src="${esc(import.meta.env.BASE_URL + s)}" alt="" class="${k === 0 ? 'on' : ''}" loading="${k === 0 ? 'eager' : 'lazy'}">`).join('')}<span class="dots">${p.shots.map((s, k) => `<i class="${k === 0 ? 'on' : ''}"></i>`).join('')}</span></div>`;
+    else if (p.video) demo = `<div class="embed"><iframe src="https://www.youtube-nocookie.com/embed/${esc(p.video)}?autoplay=1&mute=1&loop=1&playlist=${esc(p.video)}&controls=0&rel=0" title="Demo of ${esc(p.title)}" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>`;
+    if (demo) demo = `<h4>Demo</h4><div class="demo">${demo}<button class="enlarge" type="button" data-enlarge>Click to enlarge</button></div>`;
     return { back: 'projects', eyebrow: p.year ? `Project, ${p.year}` : 'Project', title: p.title, meta: p.stack,
       body: `<p>${esc(p.blurb)}</p>${demo}<p class="d-links">${links.join('<br>')}</p><h4>How it works</h4><p>${esc(p.details)}</p>` };
   }
@@ -129,6 +131,10 @@ export function buildUI(root) {
       <div class="p-head"><button class="p-back" id="detail-back" type="button">Back</button><button class="p-close" data-close type="button">Hide</button></div>
       <div class="p-body" id="detail-body"></div>
     </aside>
+    <div class="lightbox" id="lightbox" hidden role="dialog" aria-label="Enlarged demo">
+      <div class="lb-box" id="lb-box"></div>
+      <button class="lb-close" id="lb-close" type="button">Close</button>
+    </div>
     <div class="scanner" id="scanner" hidden aria-hidden="true">
       <div class="scan-card">
         <img id="scan-img" alt="">
@@ -156,7 +162,48 @@ export function buildUI(root) {
   }
   // "Step back" and the detail's "Back to …" would mean the same thing, so only one shows at a time.
   const syncBack = () => { back.hidden = !focused || detailOpen; };
+  // Screenshot slideshows advance on a timer while a detail (or the enlarged view) is open.
+  const SLIDE_MS = 2200;
+  function runSlides(box) {
+    const imgs = [...box.querySelectorAll('img')], dots = [...box.querySelectorAll('.dots i')];
+    if (!imgs.length) return null;
+    // The box takes the shape of the screenshots, so nothing gets cropped.
+    const fit = () => { if (imgs[0].naturalWidth) box.style.aspectRatio = `${imgs[0].naturalWidth} / ${imgs[0].naturalHeight}`; };
+    if (imgs[0].complete) fit(); else imgs[0].addEventListener('load', fit, { once: true });
+    if (imgs.length < 2 || reduced) return null;
+    let k = imgs.findIndex(im => im.classList.contains('on'));
+    return setInterval(() => {
+      k = (k + 1) % imgs.length;
+      imgs.forEach((im, i) => im.classList.toggle('on', i === k));
+      dots.forEach((d, i) => d.classList.toggle('on', i === k));
+    }, SLIDE_MS);
+  }
+  let slideTimer = null, lbTimer = null;
+  function startSlides() {
+    clearInterval(slideTimer); slideTimer = null;
+    const box = detailBody.querySelector('.slides');
+    if (box) slideTimer = runSlides(box);
+    const btn = detailBody.querySelector('[data-enlarge]');
+    if (btn) btn.addEventListener('click', openLightbox);
+  }
+  // Enlarged demo: a copy of the demo box fills the screen; click outside, Close or Escape puts it away.
+  const lightbox = $('#lightbox'), lbBox = $('#lb-box');
+  function openLightbox() {
+    const src = detailBody.querySelector('.demo .embed');
+    if (!src) return;
+    lbBox.innerHTML = '';
+    const copy = src.cloneNode(true);
+    lbBox.appendChild(copy);
+    lightbox.hidden = false;
+    clearInterval(lbTimer); lbTimer = copy.classList.contains('slides') ? runSlides(copy) : null;
+  }
+  function closeLightbox() { lightbox.hidden = true; lbBox.innerHTML = ''; clearInterval(lbTimer); lbTimer = null; }
+  $('#lb-close').addEventListener('click', closeLightbox);
+  lightbox.addEventListener('click', e => { if (e.target === lightbox) closeLightbox(); });
+  addEventListener('keydown', e => { if (e.key === 'Escape' && !lightbox.hidden) { e.stopImmediatePropagation(); closeLightbox(); } }, true);
   function hideDetail() {
+    clearInterval(slideTimer); slideTimer = null;
+    closeLightbox();
     detailOpen = false; detailEl.classList.remove('open');
     detailBody.innerHTML = '';
     state.panelOpen = !!open; document.body.classList.toggle('panel-open', state.panelOpen);
@@ -172,6 +219,7 @@ export function buildUI(root) {
     detailOpen = true; detailEl.classList.add('open');
     state.panelOpen = true; document.body.classList.add('panel-open');
     syncBack();
+    startSlides();
   }
 
   $$('[data-go]').forEach(b => b.addEventListener('click', () => {

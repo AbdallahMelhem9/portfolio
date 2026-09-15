@@ -223,7 +223,7 @@ async function start() {
     }
 
     const s = 1 - Math.exp(-dt * 5);
-    const wantX = ui.state.panelOpen && !isMobile() ? 0.19 : 0;
+    const wantX = ui.state.panelOpen && !isMobile() ? 0.22 : 0;
     const wantY = ui.state.panelOpen && isMobile() ? 0.24 : 0;
     shiftX += (wantX - shiftX) * s; shiftY += (wantY - shiftY) * s;
     camera.setViewOffset(innerWidth, innerHeight, shiftX * innerWidth, shiftY * innerHeight, innerWidth, innerHeight);

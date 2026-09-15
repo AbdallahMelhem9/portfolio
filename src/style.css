@@ -14,7 +14,7 @@
   --body: 'IBM Plex Sans', 'Segoe UI', system-ui, sans-serif;
   --mono: 'IBM Plex Mono', Consolas, monospace;
   --gutter: clamp(14px, 3vw, 36px);
-  --panel-w: min(440px, 40vw);
+  --panel-w: min(520px, 45vw);
   --sheet-h: 48vh;
 }
 * { box-sizing: border-box; }
@@ -121,6 +121,27 @@ body.ready #scene { opacity: 1; }
 .top.silver { color: #d3dceb; border-color: rgba(211, 220, 235, .45); }
 .top.bronze { color: #d4915c; border-color: rgba(212, 145, 92, .5); }
 .embed video { width: 100%; height: 100%; display: block; object-fit: cover; }
+/* Demo block: the embed, then a small enlarge control */
+.demo { margin: .2rem 0 .6rem; }
+.demo .embed { margin: 0; }
+.enlarge { display: block; margin: .35rem 0 0; font: 500 .8rem var(--mono); color: var(--muted); background: none; border: 0; padding: .2rem 0; cursor: pointer; }
+.enlarge:hover { color: var(--cyan); }
+.enlarge::before { content: "\2922\00a0"; color: var(--cyan); }
+
+/* Enlarged demo */
+.lightbox { position: fixed; inset: 0; z-index: 20; background: rgba(2, 6, 13, .9); display: flex; align-items: center; justify-content: center; padding: 4vh 4vw; }
+.lightbox[hidden] { display: none; }
+.lb-box { width: min(92vw, 1600px); max-height: 92vh; }
+.lb-box .embed { width: 100%; max-height: 88vh; margin: 0; box-shadow: 0 0 60px rgba(77, 243, 255, .25); }
+.lb-close { position: fixed; top: 1rem; right: 1rem; font: 500 .9rem var(--body); color: var(--ice); background: rgba(4, 10, 22, .85); border: 1px solid var(--cyan); padding: .45rem .9rem; cursor: pointer; }
+
+/* Screenshot slideshow: images stack and crossfade */
+.slides { position: relative; overflow: hidden; }
+.slides img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: top; opacity: 0; transition: opacity .45s ease; }
+.slides img.on { opacity: 1; }
+.slides .dots { position: absolute; left: 0; right: 0; bottom: 8px; display: flex; justify-content: center; gap: 6px; }
+.slides .dots i { width: 6px; height: 6px; border-radius: 50%; background: rgba(220, 235, 255, .45); transition: background .3s; }
+.slides .dots i.on { background: var(--cyan); box-shadow: 0 0 6px var(--cyan); }
 
 .tl { list-style: none; margin: 0; padding: 0; border-left: 1px solid var(--trace); }
 .tl li { padding: .3rem 0 .5rem .9rem; position: relative; }
